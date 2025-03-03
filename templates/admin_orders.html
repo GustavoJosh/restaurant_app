@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kitchen Orders</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f8f8;
+            text-align: center;
+        }
+        h1 {
+            color: #d48806;
+        }
+        .orders-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+        .order-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: left;
+            position: relative;
+        }
+        .order-header {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .order-items {
+            background: #fff7e6;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        .order-actions {
+            display: flex;
+            justify-content: space-between;
+        }
+        .btn {
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .btn-complete { background: #28a745; color: white; }
+        .btn-cancel { background: #dc3545; color: white; } 
+        .btn-view { background: #ffc107; color: black; }
+    </style>
+</head>
+<body>
+    <h1>Kitchen Order Management</h1>
+    <div class="orders-container" id="orders-container"></div>
+
+    <script>
+        var socket = io.connect("http://127.0.0.1:5000", { transports: ["websocket"] });
+
+        function renderOrders(orders) {
+            let container = document.getElementById("orders-container");
+            container.innerHTML = ""; // Clear current orders
+            orders.forEach(order => {
+                let orderCard = document.createElement("div");
+                orderCard.classList.add("order-card");
+                orderCard.innerHTML = `
+                    <div class="order-header">Table ${order.table}</div>
+                    <div class="order-items">
+                        ${order.items.map(item => `<p><strong>${item.quantity}x</strong> ${item.name}</p>`).join("")}
+                    </div>
+                    <div class="order-actions">
+                        <button class="btn btn-complete" onclick="completeOrder(${order.id})">✔ Complete</button>
+                        <button class="btn btn-cancel" onclick="cancelOrder(${order.id})">✖ Cancel</button>
+                    </div>
+                `;
+                container.appendChild(orderCard);
+            });
+        }
+
+        function completeOrder(orderId) {
+            fetch(`/api/order/complete/${orderId}`, { method: "POST" })
+                .then(res => res.json())
+                .then(() => {
+                    socket.emit("order_update", { action: "completed", orderId });
+                });
+        }
+
+        function cancelOrder(orderId) {
+            fetch(`/api/order/cancel/${orderId}`, { method: "POST" })
+                .then(res => res.json())
+                .then(() => {
+                    socket.emit("order_update", { action: "canceled", orderId });
+                });
+        }
+
+        function fetchAndRenderOrders() {
+            fetch("/api/kitchen/orders")
+                .then(res => res.json())
+                .then(orders => renderOrders(orders));
+        }
+
+        socket.on("order_update", () => {
+            fetchAndRenderOrders();
+        });
+
+        window.onload = () => {
+            fetchAndRenderOrders();
+        };
+    </script>
+</body>
+</html>

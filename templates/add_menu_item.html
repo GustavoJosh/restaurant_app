@@ -1,0 +1,59 @@
+<!-- ADD MENU ITEM -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Dish</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-4">Add New Dish</h1>
+        <p>Fill out the form below to add a new dish to the menu.</p>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }}" role="alert">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Navigation Buttons -->
+        <a href="{{ url_for('admin_menu') }}" class="btn btn-secondary mb-3">Back to Menu</a>
+
+        <!-- Add Dish Form -->
+        <form method="POST" action="{{ url_for('add_menu_item') }}">
+            <div class="form-group">
+                <label for="name">Dish Name</label>
+                <input type="text" class="form-control" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+                <label for="price">Price ($)</label>
+                <input type="number" step="0.01" class="form-control" id="price" name="price" required>
+            </div>
+            <!-- REMOVED STOCK INPUT FIELD -->
+            <div class="form-group">
+                <label for="branch_ids">Available at Branches</label>
+                <select class="form-control" id="branch_ids" name="branch_ids" multiple required>
+                    {% for branch in branches %}
+                        <option value="{{ branch.id }}">{{ branch.name }}</option>
+                    {% endfor %}
+                </select>
+                <small>Hold Ctrl (Cmd on Mac) to select multiple branches</small>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Add Dish</button>
+        </form>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+</body>
+</html>

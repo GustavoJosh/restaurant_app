@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waiter POS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex flex-col md:flex-row">
+    <!-- Sidebar mimicking index -->
+    <aside class="w-full md:w-1/6 bg-yellow-600 text-white h-auto md:h-screen flex flex-col p-6">
+        <h2 class="text-lg font-bold mb-4">Table Selected: <span id="selected-table">1</span></h2>
+        <nav class="flex flex-col space-y-4">
+            <button class="py-3 px-4 bg-yellow-500 rounded-lg" onclick="updateTable(1)">Table 1</button>
+            <button class="py-3 px-4 bg-yellow-500 rounded-lg" onclick="updateTable(2)">Table 2</button>
+            <button class="py-3 px-4 bg-yellow-500 rounded-lg" onclick="updateTable(3)">Table 3</button>
+            <button class="py-3 px-4 bg-yellow-500 rounded-lg" onclick="updateTable(4)">Table 4</button>
+            <button class="py-3 px-4 bg-yellow-500 rounded-lg" onclick="updateTable(5)">Table 5</button>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-6">
+        <h1 class="text-3xl font-bold text-center text-yellow-600 mb-6">Point of Sale</h1>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {% for item in menu_items %}
+            <div class="bg-white shadow-md rounded-lg p-4 text-center">
+                <img src="{{ url_for('static', filename='images/default.jpg') }}" 
+                     alt="Product Image" class="w-full h-32 object-cover rounded mb-2">
+                <h2 class="text-xl font-bold">{{ item.name }}</h2>
+                <p class="text-gray-700">${{ item.price }}</p>
+                <div class="mt-2 flex justify-center items-center">
+                    <button class="bg-red-500 text-white px-3 py-1 rounded decrease-qty" data-id="{{ item.id }}">-</button>
+                    <span class="px-4 item-qty" id="qty-{{ item.id }}">0</span>
+                    <button class="bg-blue-500 text-white px-3 py-1 rounded increase-qty" data-id="{{ item.id }}">+</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+
+    <!-- Right Sidebar for Cart -->
+    <aside class="w-full md:w-1/5 bg-gray-200 h-auto md:h-screen p-4 flex flex-col">
+        <h2 class="text-xl font-bold">🛒 Your Order</h2>
+        <ul id="cart-items" class="flex-1 overflow-auto"></ul>
+        <div class="total-price mt-4">
+            <p class="font-bold">Total: <span id="total-cost">$0.00</span></p>
+        </div>
+        <div class="flex justify-between mt-4">
+            <button id="cancel-cart" class="bg-red-500 text-white px-4 py-2 rounded">❌ Cancel</button>
+            <button id="submit-cart" class="bg-green-500 text-white px-4 py-2 rounded hidden">✅ Accept</button>
+        </div>
+    </aside>
+
+    <script>
+        let cart = {};
+        let selectedTable = 1;
+
+        function updateTable(tableNumber) {
+            selectedTable = tableNumber;
+            document.getElementById("selected-table").textContent = tableNumber;
+        }
+        
+        document.querySelectorAll(".increase-qty").forEach(button => {
+            button.addEventListener("click", () => {
+                let itemId = button.getAttribute("data-id");
+                let quantityElement = document.getElementById(`qty-${itemId}`);
+                let itemName = button.parentNode.previousElementSibling.previousElementSibling.textContent;
+                let itemPrice = parseFloat(button.parentNode.previousElementSibling.textContent.replace("$", ""));
+                
+                if (!cart[itemId]) {
+                    cart[itemId] = { name: itemName, price: itemPrice, quantity: 0 };
+                }
+                cart[itemId].quantity++;
+                quantityElement.textContent = cart[itemId].quantity;
+                updateCart();
+            });
+        });
+        
+        document.querySelectorAll(".decrease-qty").forEach(button => {
+            button.addEventListener("click", () => {
+                let itemId = button.getAttribute("data-id");
+                let quantityElement = document.getElementById(`qty-${itemId}`);
+                
+                if (cart[itemId] && cart[itemId].quantity > 0) {
+                    cart[itemId].quantity--;
+                    if (cart[itemId].quantity === 0) delete cart[itemId];
+                }
+                quantityElement.textContent = cart[itemId] ? cart[itemId].quantity : 0;
+                updateCart();
+            });
+        });
+        
+        function updateCart() {
+            let cartList = document.getElementById("cart-items");
+            cartList.innerHTML = "";
+            let totalCost = 0;
+            
+            Object.keys(cart).forEach(itemId => {
+                let item = cart[itemId];
+                let li = document.createElement("li");
+                li.textContent = `${item.quantity}x ${item.name} - $${(item.price * item.quantity).toFixed(2)}`;
+                cartList.appendChild(li);
+                totalCost += item.price * item.quantity;
+            });
+            
+            document.getElementById("total-cost").textContent = `$${totalCost.toFixed(2)}`;
+            document.getElementById("submit-cart").classList.toggle("hidden", totalCost === 0);
+        }
+
+                document.getElementById("submit-cart").addEventListener("click", () => {
+            fetch("/api/order", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    table_number: selectedTable,
+                    branch_id: 1,  // 🔥 Ensure this is added
+                    items: Object.keys(cart).map(id => ({ menu_item_id: id, quantity: cart[id].quantity }))
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message || "Order submitted!");
+                cart = {};
+                updateCart();
+            })
+            .catch(error => console.error("Error:", error));
+        });
+
+    </script>
+</body>
+</html>

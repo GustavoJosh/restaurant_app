@@ -1,0 +1,49 @@
+<!-- ADMIN RECIPES -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Management</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-4">Manage Recipes</h1>
+        <p>View, edit, or delete recipes for menu items.</p>
+        
+        <!-- Navigation Buttons -->
+        <a href="{{ url_for('admin_menu') }}" class="btn btn-secondary mb-3">Back to Menu</a>
+        <a href="{{ url_for('add_recipe') }}" class="btn btn-info mb-3">Add New Recipe</a>
+        
+        <!-- Recipe Table -->
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Dish</th>
+                    <th>Ingredient</th>
+                    <th>Quantity Used</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for recipe in recipes %}
+                <tr>
+                    <td>{{ recipe.menu_item.name }}</td>
+                    <td>{{ recipe.ingredient.name }} ({{ recipe.ingredient.unit }})</td>
+                    <td>{{ recipe.quantity_used }}</td>
+                    <td>
+                        <a href="{{ url_for('edit_recipe', id=recipe.id) }}" class="btn btn-warning btn-sm">Edit</a>
+                        <form action="{{ url_for('delete_recipe', id=recipe.id) }}" method="POST" style="display:inline;">
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this recipe?');">
+                                Delete
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

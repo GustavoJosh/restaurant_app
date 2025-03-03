@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Dashboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100">
+    <!-- Sidebar -->
+    <div class="flex">
+        <aside class="bg-yellow-600 text-white w-64 h-screen flex flex-col items-center">
+            <!-- Logo -->
+            <div class="p-6">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="h-20 w-20 rounded-full mb-4">
+            </div>
+        
+            <!-- Navigation Links -->
+            <nav class="flex flex-col space-y-4 w-full text-center">
+                <a href="{{ url_for('admin_menu') }}" class="py-3 px-4 hover:bg-yellow-500 rounded-lg transition-all">1 - Manejo del menu</a>
+                <a href="{{ url_for('admin_ingredients') }}" class="py-3 px-4 hover:bg-yellow-500 rounded-lg transition-all">2 - Manejo del producto</a>
+                <a href="{{ url_for('admin_branches') }}" class="py-3 px-4 hover:bg-yellow-500 rounded-lg transition-all">3 - Sucursales</a>
+                <button class="py-3 px-4 bg-yellow-500 rounded-lg cursor-not-allowed">4 - Sales Reports</button>
+                <button class="py-3 px-4 bg-yellow-500 rounded-lg cursor-not-allowed">5 - Employee Management</button>
+                <button class="py-3 px-4 bg-yellow-500 rounded-lg cursor-not-allowed">6 - Feedback & Complaints</button>
+                <a href="{{ url_for('admin_orders') }}" class="py-3 px-4 hover:bg-yellow-500 rounded-lg transition-all">7 - Modulo Cocina</a>
+                <a href="{{ url_for('sell_point') }}" class="py-3 px-4 hover:bg-yellow-500 rounded-lg transition-all">8 - Punto de venta</a>
+                <a href="{{ url_for('order_history') }}" class="py-3 px-4 hover:bg-yellow-500 rounded-lg transition-all">9 - Historial de ventas</a>
+                <a href="{{ url_for('waiter_sellpoint') }}" class="py-3 px-4 hover:bg-yellow-500 rounded-lg transition-all">10 - Modulo Meseros</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-6">
+            <header class="text-center mb-6">
+                <h1 class="text-4xl font-bold text-yellow-600">Panel de administrador - Gorditas Doña Pily</h1>
+                <p class="text-gray-600">Bienvenido al panel - La Paz, BCS - 2025</p>
+            </header>
+
+            <!-- Dashboard Cards -->
+            <section class="grid grid-cols-3 gap-4 p-6">
+                <!-- Ingredient Stock Levels -->
+                <div class="bg-white shadow-md rounded-lg p-4 col-span-1">
+                    <h3 class="text-lg font-bold">Niveles de producto</h3>
+                    <canvas id="ingredientStockChart"></canvas>
+                </div>
+                        <!-- Orders Per Hour -->
+                        <div class="bg-white shadow-md rounded-lg p-4" style="height: 300px;">
+                            <h3 class="text-lg font-bold">Ordenes por hora</h3>
+                            <canvas id="peakHoursChart" style="width: 100%; height: 100%;"></canvas>
+                        </div>
+                        
+                        
+                <!-- Best Sellers -->
+                <div class="bg-white shadow-md rounded-lg p-4 col-span-1">
+                    <h3 class="text-lg font-bold">Unidades vendidas</h3>
+                    <canvas id="bestSellersChart"></canvas>
+                </div>
+
+                <!-- Daily Revenue - Now in Grid -->
+                <div class="bg-white shadow-md rounded-lg p-4 col-span-3" style="height: 300px;">
+                    <h3 class="text-lg font-bold">Ingresos diarios</h3>
+                    <canvas id="dailySalesChart" style="width: 100%; height: 100%;"></canvas>
+                </div>
+            </section>
+            
+        </main>
+    </div>
+<!-- #region Scripts -->
+    <!-- Fetch and Initialize Chart -->
+    <script>
+        async function fetchIngredientStock() {
+            const response = await fetch('/api/ingredients/stock');
+            const data = await response.json();
+
+            const ctx = document.getElementById('ingredientStockChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Nivel (Unidad)',
+                        data: data.data,
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(153, 102, 255, 0.2)',
+                            'rgba(255, 159, 64, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        fetchIngredientStock();
+    </script>
+ <!-- ------------- OTHER SCRIPT ------------ -->
+ <script>
+    async function fetchPeakHours() {
+        const response = await fetch('/api/sales_report');
+        const data = await response.json();
+
+        // Convert UTC hours to UTC-7
+        const adjustedPeakHours = data.peak_hours.map(hour => {
+            let localHour = parseInt(hour.hour, 10) - 7;
+            if (localHour < 0) localHour += 24; // Ensure it stays in 24-hour format
+            if (isNaN(localHour)) localHour = 0;  // Default to 0 if NaN
+            return { hour: localHour, orders: hour.orders };
+        });
+
+        new Chart(document.getElementById("peakHoursChart").getContext("2d"), {
+            type: "bar",
+            data: {
+                labels: adjustedPeakHours.map(hour => `${hour.hour.toString().padStart(2, '0')}:00`),
+                datasets: [{
+                    label: "Orden (Unidad)",
+                    data: adjustedPeakHours.map(hour => hour.orders),
+                    backgroundColor: "rgb(255, 159, 64)"
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: {
+                    padding: { left: 10, right: 10, top: 10, bottom: 30 }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { font: { size: 12 } }
+                    },
+                    x: {
+                        ticks: { 
+                            font: { size: 12 }, 
+                            maxRotation: 0, 
+                            minRotation: 0 
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: "top",
+                        labels: { font: { size: 12 } }
+                    }
+                }
+            }
+        });
+    }
+    fetchPeakHours();
+</script>
+
+<!-- ------------- OTHER SCRIPT ------------ -->
+<script>
+    async function fetchBestSellers() {
+        const response = await fetch('/api/sales_report');
+        const data = await response.json();
+
+        new Chart(document.getElementById("bestSellersChart").getContext("2d"), {
+            type: "bar",
+            data: {
+                labels: data.best_sellers.map(item => item.name),
+                datasets: [{
+                    label: "Venta (Unidad)",
+                    data: data.best_sellers.map(item => item.sold),
+                    backgroundColor: "rgb(54, 162, 235)"
+                }]
+            }
+        });
+    }
+    fetchBestSellers();
+</script>
+<!-- ------------- OTHER SCRIPT ------------ -->
+<script>
+    async function fetchSalesReport() {
+        const response = await fetch('/api/sales_report');
+        const data = await response.json();
+
+        // Daily Sales Chart
+        new Chart(document.getElementById("dailySalesChart").getContext("2d"), {
+            type: "line",
+            data: {
+                labels: data.daily_sales.map(d => d.date),
+                datasets: [{
+                    label: "Ingreso ($)",
+                    data: data.daily_sales.map(d => d.revenue),
+                    borderColor: "rgb(255, 99, 132)",
+                    fill: false
+                }]
+            }
+        });
+    }
+    fetchSalesReport();
+</script>
+<!-- #endregion  -->
+
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!-- ADD RECIPE -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Recipe</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-4">Add New Recipe</h1>
+        <p>Select a dish and add multiple required ingredients.</p>
+        
+        <!-- Navigation Buttons -->
+        <a href="{{ url_for('admin_recipes') }}" class="btn btn-secondary mb-3">Back to Recipes</a>
+        
+        <!-- Recipe Form -->
+        <form method="POST" action="{{ url_for('add_recipe') }}">
+            <!-- Dish Selection -->
+            <div class="form-group">
+                <label for="menu_item_id">Dish</label>
+                <select class="form-control" id="menu_item_id" name="menu_item_id" required>
+                    {% for item in menu_items %}
+                    <option value="{{ item.id }}">{{ item.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Ingredients Section (Dynamic Fields) -->
+            <div id="ingredientList">
+                <h3>Ingredients</h3>
+
+                <!-- Initial Ingredient Input -->
+                <div class="ingredient-group form-group">
+                    <label for="ingredient_id">Ingredient</label>
+                    <select class="form-control" id="ingredient_id" name="ingredient_id[]" required title="Select an ingredient">
+                        {% for ingredient in raw_ingredients %}
+                        <option value="{{ ingredient.id }}">{{ ingredient.name }} ({{ ingredient.total_quantity }} {{ ingredient.unit }})</option>
+                        {% endfor %}
+                    </select>
+
+                    <label for="quantity_used">Quantity Used (per dish)</label>
+                    <input type="number" step="0.01" class="form-control" id="quantity_used" name="quantity_used[]" required>
+
+
+                    <label for="unit">Unit</label>
+                    <select class="form-control" id="unit" name="unit[]" required title="Select the unit of measurement">
+                        <option value="kg">kg</option>
+                        <option value="g">g</option>
+                        <option value="piece">piece</option>
+                        <option value="L">L</option>
+                    </select>
+
+                    <button type="button" class="btn btn-danger btn-sm mt-2 remove-ingredient">❌ Remove</button>
+                </div>
+            </div>
+
+            <!-- Add Ingredient Button -->
+            <button type="button" class="btn btn-success mt-3" onclick="addIngredient()">➕ Add Another Ingredient</button>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary mt-3">Add Recipe</button>
+        </form>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+    <!-- Script to Dynamically Add & Remove Ingredients -->
+    <script>
+        function addIngredient() {
+            let ingredientList = document.getElementById("ingredientList");
+            let newIngredient = document.createElement("div");
+            newIngredient.classList.add("ingredient-group", "form-group");
+
+            newIngredient.innerHTML = `
+                <label>Ingredient</label>
+                <select class="form-control" name="ingredient_id[]" required>
+                    {% for ingredient in raw_ingredients %}
+                    <option value="{{ ingredient.id }}">{{ ingredient.name }} ({{ ingredient.total_quantity }} {{ ingredient.unit }})</option>
+                    {% endfor %}
+                </select>
+
+                <label>Quantity Used (per dish)</label>
+                <input type="number" step="0.01" class="form-control" name="quantity_used[]" required>
+
+                <label>Unit</label>
+                <select class="form-control" name="unit[]" required>
+                    <option value="kg">kg</option>
+                    <option value="g">g</option>
+                    <option value="piece">piece</option>
+                    <option value="L">L</option>
+                </select>
+
+                <button type="button" class="btn btn-danger btn-sm mt-2 remove-ingredient">❌ Remove</button>
+            `;
+
+            ingredientList.appendChild(newIngredient);
+
+            // Add event listener to the remove button
+            newIngredient.querySelector(".remove-ingredient").addEventListener("click", function() {
+                this.parentNode.remove();
+            });
+        }
+
+        // Ensure remove buttons work on initial ingredient fields
+        document.querySelectorAll(".remove-ingredient").forEach(button => {
+            button.addEventListener("click", function() {
+                this.parentNode.remove();
+            });
+        });
+    </script>
+</body>
+</html>

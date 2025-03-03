@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gorditas Doña Pily - Panel de Administrador</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Add FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        /* Chart container heights */
+        .chart-container {
+            min-height: 250px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="bg-gradient-to-b from-yellow-600 to-yellow-700 text-white w-64 flex-shrink-0 flex flex-col h-full overflow-hidden shadow-lg">
+            <!-- Logo & Brand -->
+            <div class="p-4 flex items-center justify-center border-b border-yellow-500">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="h-16 w-16 rounded-full">
+                <div class="ml-3">
+                    <h1 class="font-bold text-xl">Doña Pily</h1>
+                    <p class="text-xs text-yellow-200">Sistema Administrativo</p>
+                </div>
+            </div>
+        
+            <!-- Navigation Links -->
+            <nav class="flex-1 overflow-y-auto py-4">
+                <div class="px-4 mb-3 text-xs font-semibold text-yellow-300 uppercase">Principal</div>
+                <a href="{{ url_for('home') }}" class="flex items-center py-2 px-4 text-white hover:bg-yellow-500 rounded mx-2 mb-1 transition-all">
+                    <i class="fas fa-home w-5 mr-3 text-center"></i>
+                    <span>Inicio</span>
+                </a>
+                <a href="{{ url_for('admin_menu') }}" class="flex items-center py-2 px-4 text-white hover:bg-yellow-500 rounded mx-2 mb-1 transition-all">
+                    <i class="fas fa-utensils w-5 mr-3 text-center"></i>
+                    <span>Manejo del Menu</span>
+                </a>
+                <a href="{{ url_for('admin_ingredients') }}" class="flex items-center py-2 px-4 text-white hover:bg-yellow-500 rounded mx-2 mb-1 transition-all">
+                    <i class="fas fa-carrot w-5 mr-3 text-center"></i>
+                    <span>Manejo del Producto</span>
+                </a>
+                <a href="{{ url_for('admin_branches') }}" class="flex items-center py-2 px-4 text-white hover:bg-yellow-500 rounded mx-2 mb-1 transition-all">
+                    <i class="fas fa-store w-5 mr-3 text-center"></i>
+                    <span>Sucursales</span>
+                </a>
+                
+                <div class="px-4 mt-6 mb-3 text-xs font-semibold text-yellow-300 uppercase">Operaciones</div>
+                <a href="{{ url_for('admin_orders') }}" class="flex items-center py-2 px-4 text-white hover:bg-yellow-500 rounded mx-2 mb-1 transition-all">
+                    <i class="fas fa-fire w-5 mr-3 text-center"></i>
+                    <span>Modulo Cocina</span>
+                </a>
+                <a href="{{ url_for('sell_point') }}" class="flex items-center py-2 px-4 text-white hover:bg-yellow-500 rounded mx-2 mb-1 transition-all">
+                    <i class="fas fa-cash-register w-5 mr-3 text-center"></i>
+                    <span>Punto de Venta</span>
+                </a>
+                <a href="{{ url_for('waiter_sellpoint') }}" class="flex items-center py-2 px-4 text-white hover:bg-yellow-500 rounded mx-2 mb-1 transition-all">
+                    <i class="fas fa-user-tie w-5 mr-3 text-center"></i>
+                    <span>Modulo Meseros</span>
+                </a>
+                
+                <div class="px-4 mt-6 mb-3 text-xs font-semibold text-yellow-300 uppercase">Reportes</div>
+                <a href="{{ url_for('order_history') }}" class="flex items-center py-2 px-4 text-white hover:bg-yellow-500 rounded mx-2 mb-1 transition-all">
+                    <i class="fas fa-history w-5 mr-3 text-center"></i>
+                    <span>Historial de Ventas</span>
+                </a>
+                <div class="flex items-center py-2 px-4 text-white bg-yellow-500/30 rounded mx-2 mb-1 cursor-not-allowed">
+                    <i class="fas fa-chart-bar w-5 mr-3 text-center"></i>
+                    <span>Reportes de Venta</span>
+                </div>
+                <div class="flex items-center py-2 px-4 text-white bg-yellow-500/30 rounded mx-2 mb-1 cursor-not-allowed">
+                    <i class="fas fa-user w-5 mr-3 text-center"></i>
+                    <span>Administrar Personal</span>
+                </div>
+                <div class="flex items-center py-2 px-4 text-white bg-yellow-500/30 rounded mx-2 mb-1 cursor-not-allowed">
+                    <i class="fas fa-comment w-5 mr-3 text-center"></i>
+                    <span>Comentarios & Quejas</span>
+                </div>
+            </nav>
+            
+            <!-- Footer -->
+            <div class="p-4 text-xs text-center text-yellow-200 border-t border-yellow-500">
+                <p>© 2025 Gorditas Doña Pily</p>
+                <p>La Paz, BCS</p>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto">
+            <!-- Header -->
+            <header class="bg-white shadow-md p-4 sticky top-0 z-10">
+                <div class="flex justify-between items-center">
+                    <h1 class="text-2xl font-bold text-yellow-600">Panel de Administrador</h1>
+                    <div class="flex items-center space-x-4">
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </span>
+                            <input type="text" placeholder="Buscar..." class="pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                        </div>
+                        <div class="flex items-center">
+                            <span class="bg-green-500 h-3 w-3 rounded-full mr-2"></span>
+                            <span class="text-gray-700">Sucursal Activa</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Content -->
+            <div class="p-6">
+                <!-- Status Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                    <div class="bg-white rounded-lg shadow-md p-4 border-l-4 border-green-500 flex items-center">
+                        <div class="rounded-full bg-green-100 p-3 mr-4">
+                            <i class="fas fa-shopping-cart text-green-500 text-xl"></i>
+                        </div>
+                        <div>
+                            <div class="text-sm text-gray-500">Órdenes Hoy</div>
+                            <div class="text-2xl font-bold" id="orders-today">-</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-md p-4 border-l-4 border-blue-500 flex items-center">
+                        <div class="rounded-full bg-blue-100 p-3 mr-4">
+                            <i class="fas fa-dollar-sign text-blue-500 text-xl"></i>
+                        </div>
+                        <div>
+                            <div class="text-sm text-gray-500">Ventas Hoy</div>
+                            <div class="text-2xl font-bold" id="sales-today">-</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-md p-4 border-l-4 border-yellow-500 flex items-center">
+                        <div class="rounded-full bg-yellow-100 p-3 mr-4">
+                            <i class="fas fa-utensils text-yellow-500 text-xl"></i>
+                        </div>
+                        <div>
+                            <div class="text-sm text-gray-500">Producto más vendido</div>
+                            <div class="text-2xl font-bold" id="top-product">-</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-md p-4 border-l-4 border-red-500 flex items-center">
+                        <div class="rounded-full bg-red-100 p-3 mr-4">
+                            <i class="fas fa-exclamation-triangle text-red-500 text-xl"></i>
+                        </div>
+                        <div>
+                            <div class="text-sm text-gray-500">Alertas de Inventario</div>
+                            <div class="text-2xl font-bold" id="inventory-alerts">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <!-- Ingredient Stock Levels -->
+                    <div class="bg-white rounded-lg shadow-md p-4">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-bold text-gray-700">Niveles de Producto</h3>
+                            <button class="text-gray-400 hover:text-gray-600" title="More options" aria-label="More options">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="ingredientStockChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Orders Per Hour -->
+                    <div class="bg-white rounded-lg shadow-md p-4">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-bold text-gray-700">Órdenes por Hora</h3>
+                            <button class="text-gray-400 hover:text-gray-600" title="More options" aria-label="More options">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="peakHoursChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Best Sellers -->
+                    <div class="bg-white rounded-lg shadow-md p-4">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-bold text-gray-700">Unidades Vendidas</h3>
+                            <button class="text-gray-400 hover:text-gray-600" title="More options" aria-label="More options">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="bestSellersChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daily Revenue Chart - Full Width -->
+                <div class="bg-white rounded-lg shadow-md p-4 mb-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-bold text-gray-700">Ingresos Diarios</h3>
+                        <div class="flex space-x-2">
+                            <button class="px-3 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300">7 Días</button>
+                            <button class="px-3 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300">30 Días</button>
+                            <button class="px-3 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300">Este Año</button>
+                        </div>
+                    </div>
+                    <div class="chart-container" style="height: 300px;">
+                        <canvas id="dailySalesChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Recent Orders Table -->
+                <div class="bg-white rounded-lg shadow-md p-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-bold text-gray-700">Órdenes Recientes</h3>
+                        <a href="{{ url_for('order_history') }}" class="text-yellow-600 hover:text-yellow-700 text-sm">
+                            Ver Todas <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white">
+                            <thead class="bg-gray-50 text-gray-600 text-xs">
+                                <tr>
+                                    <th class="py-3 px-4 text-left">Orden #</th>
+                                    <th class="py-3 px-4 text-left">Mesa</th>
+                                    <th class="py-3 px-4 text-left">Hora</th>
+                                    <th class="py-3 px-4 text-left">Total</th>
+                                    <th class="py-3 px-4 text-left">Estado</th>
+                                    <th class="py-3 px-4 text-left">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100" id="recent-orders-table">
+                                <tr class="text-gray-500 text-sm">
+                                    <td class="py-3 px-4" colspan="6">Cargando órdenes recientes...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Load Charts -->
+    <script>
+        // Updated chart functions with error handling will go here
+     
+// Add better error checks to fetchIngredientStock
+async function fetchIngredientStock() {
+    try {
+        const response = await fetch('/api/ingredients/stock');
+        if (!response.ok) {
+            console.warn(`Ingredient stock API returned ${response.status}: ${response.statusText}`);
+            
+            // If API fails, display mock data
+            const ctx = document.getElementById('ingredientStockChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Masa', 'Chicharrón', 'Deshebrada', 'Queso', 'Picadillo', 'Frijol'],
+                    datasets: [{
+                        label: 'Nivel (Unidad)',
+                        data: [75, 45, 60, 80, 55, 90],
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.6)',
+                            'rgba(255, 99, 132, 0.6)',
+                            'rgba(255, 206, 86, 0.6)',
+                            'rgba(54, 162, 235, 0.6)',
+                            'rgba(153, 102, 255, 0.6)',
+                            'rgba(255, 159, 64, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            return;
+        }
+        
+        const data = await response.json();
+        
+        if (!data || !data.labels || !data.data) {
+            console.warn('Ingredient stock data is invalid:', data);
+            throw new Error('Invalid data structure');
+        }
+
+        const ctx = document.getElementById('ingredientStockChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    label: 'Nivel (Unidad)',
+                    data: data.data,
+                    backgroundColor: [
+                        'rgba(75, 192, 192, 0.6)',
+                        'rgba(255, 99, 132, 0.6)',
+                        'rgba(255, 206, 86, 0.6)',
+                        'rgba(54, 162, 235, 0.6)',
+                        'rgba(153, 102, 255, 0.6)',
+                        'rgba(255, 159, 64, 0.6)'
+                    ],
+                    borderColor: [
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching ingredient stock data:', error);
+        document.getElementById('ingredientStockChart').parentNode.innerHTML = 
+            '<div class="chart-container flex items-center justify-center">' +
+            '<div class="text-red-500 text-center">Error al cargar datos de inventario<br>' +
+            '<button class="mt-2 px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600" ' +
+            'onclick="fetchIngredientStock()">Reintentar</button></div></div>';
+    }
+}
+
+        // Fetch Recent Orders (New function)
+        async function fetchRecentOrders() {
+            try {
+                const tableBody = document.getElementById('recent-orders-table');
+                tableBody.innerHTML = '<tr><td class="py-3 px-4" colspan="6">Cargando órdenes recientes...</td></tr>';
+                
+                const response = await fetch('/api/orders/recent');
+                
+                // If endpoint doesn't exist yet, show placeholder data
+                if (!response.ok) {
+                    tableBody.innerHTML = generatePlaceholderOrders();
+                    return;
+                }
+                
+                const orders = await response.json();
+                
+                if (orders.length === 0) {
+                    tableBody.innerHTML = '<tr><td class="py-3 px-4" colspan="6">No hay órdenes recientes</td></tr>';
+                    return;
+                }
+                
+                let html = '';
+                orders.forEach(order => {
+                    html += `
+                    <tr class="hover:bg-gray-50 text-sm">
+                        <td class="py-3 px-4">#${order.id}</td>
+                        <td class="py-3 px-4">${order.table}</td>
+                        <td class="py-3 px-4">${formatTime(order.created_at)}</td>
+                        <td class="py-3 px-4">$${order.total.toFixed(2)}</td>
+                        <td class="py-3 px-4">
+                            <span class="px-2 py-1 rounded-full text-xs ${getStatusColor(order.status)}">
+                                ${capitalizeFirstLetter(order.status)}
+                            </span>
+                        </td>
+                        <td class="py-3 px-4">
+                            <button class="text-blue-500 hover:text-blue-700 mr-2">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    `;
+                });
+                
+                tableBody.innerHTML = html;
+            } catch (error) {
+                console.error('Error fetching recent orders:', error);
+                document.getElementById('recent-orders-table').innerHTML = 
+                    '<tr><td class="py-3 px-4 text-red-500" colspan="6">Error al cargar órdenes recientes</td></tr>';
+            }
+        }
+        
+        // Helper functions
+        function generatePlaceholderOrders() {
+            return `
+                <tr class="hover:bg-gray-50 text-sm">
+                    <td class="py-3 px-4">#1025</td>
+                    <td class="py-3 px-4">4</td>
+                    <td class="py-3 px-4">Hace 10 minutos</td>
+                    <td class="py-3 px-4">$125.50</td>
+                    <td class="py-3 px-4">
+                        <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
+                            Completado
+                        </span>
+                    </td>
+                    <td class="py-3 px-4">
+                        <button class="text-blue-500 hover:text-blue-700 mr-2">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }
+        
+        function formatTime(dateString) {
+            // If we have actual date data
+            if (dateString) {
+                const date = new Date(dateString);
+                return date.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+            }
+            // Otherwise return placeholder
+            return 'Hace poco';
+        }
+        
+        function getStatusColor(status) {
+            switch(status) {
+                case 'completed':
+                    return 'bg-green-100 text-green-800';
+                case 'pending':
+                    return 'bg-yellow-100 text-yellow-800';
+                case 'canceled':
+                    return 'bg-red-100 text-red-800';
+                default:
+                    return 'bg-gray-100 text-gray-800';
+            }
+        }
+        
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
+        async function updateDashboardSummary() {
+    try {
+        const response = await fetch('/api/dashboard/summary');
+        
+        // If API doesn't exist yet or has an error, use placeholder data
+        if (!response.ok) {
+            console.warn(`Dashboard summary API returned ${response.status}: ${response.statusText}`);
+            document.getElementById('orders-today').textContent = '36';
+            document.getElementById('sales-today').textContent = '$2,450.75';
+            document.getElementById('top-product').textContent = 'Gordita Chicharrón';
+            document.getElementById('inventory-alerts').textContent = '2';
+            return;
+        }
+        
+        const data = await response.json();
+        
+        // Check if we got the expected data
+        if (!data || typeof data !== 'object') {
+            console.warn('Dashboard summary data is invalid:', data);
+            document.getElementById('orders-today').textContent = '36';
+            document.getElementById('sales-today').textContent = '$2,450.75';
+            document.getElementById('top-product').textContent = 'Gordita Chicharrón';
+            document.getElementById('inventory-alerts').textContent = '2';
+            return;
+        }
+        
+        // Update the dashboard cards with actual data
+        document.getElementById('orders-today').textContent = data.orders_today || '0';
+        document.getElementById('sales-today').textContent = data.sales_today ? `$${parseFloat(data.sales_today).toFixed(2)}` : '$0.00';
+        document.getElementById('top-product').textContent = data.top_product || 'No hay datos';
+        
+        // Add color highlight for inventory alerts if there are any
+        const alertElement = document.getElementById('inventory-alerts');
+        alertElement.textContent = data.inventory_alerts || '0';
+        
+        if (data.inventory_alerts > 0) {
+            alertElement.classList.add('text-red-600');
+        } else {
+            alertElement.classList.remove('text-red-600');
+        }
+    } catch (error) {
+        console.error('Error updating dashboard summary:', error);
+        // Fallback to default values
+        document.getElementById('orders-today').textContent = '36';
+        document.getElementById('sales-today').textContent = '$2,450.75';
+        document.getElementById('top-product').textContent = 'Gordita Chicharrón';
+        document.getElementById('inventory-alerts').textContent = '2';
+    }
+}
+
+// Add functionality to the period buttons for the daily sales chart
+document.addEventListener('DOMContentLoaded', function() {
+    // Get the period buttons
+    const periodButtons = document.querySelectorAll('[data-period]');
+    
+    // Add click event listeners to each button
+    periodButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const period = this.getAttribute('data-period');
+            updateDailySalesChart(period);
+            
+            // Highlight the active button
+            periodButtons.forEach(btn => btn.classList.remove('bg-yellow-500', 'text-white'));
+            this.classList.add('bg-yellow-500', 'text-white');
+        });
+    });
+    
+    // If there are period buttons on the page, make sure to add the data-period attributes
+    // Example implementation:
+    // <button data-period="7" class="px-3 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300">7 Días</button>
+    // <button data-period="30" class="px-3 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300">30 Días</button>
+    // <button data-period="365" class="px-3 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300">Este Año</button>
+});
+
+// Function to update the daily sales chart based on selected period
+async function updateDailySalesChart(days) {
+    try {
+        const today = new Date();
+        const startDate = new Date();
+        startDate.setDate(today.getDate() - days);
+        
+        // Format dates for API
+        const startDateStr = startDate.toISOString().split('T')[0];
+        const endDateStr = today.toISOString().split('T')[0];
+        
+        // Fetch data with date range
+        const response = await fetch(`/api/sales_report?start_date=${startDateStr}&end_date=${endDateStr}`);
+        
+        if (!response.ok) {
+            console.warn(`API endpoint returned ${response.status}: ${response.statusText}`);
+            return;
+        }
+        
+        const data = await response.json();
+        
+        if (!data.daily_sales || !Array.isArray(data.daily_sales)) {
+            console.warn('Daily sales data missing or empty:', data);
+            return;
+        }
+        
+        // Get the chart instance and update it
+        const chartInstance = Chart.getChart('dailySalesChart');
+        
+        if (chartInstance) {
+            chartInstance.data.labels = data.daily_sales.map(d => d.date);
+            chartInstance.data.datasets[0].data = data.daily_sales.map(d => d.revenue);
+            chartInstance.update();
+        } else {
+            // If chart doesn't exist yet, create it
+            const ctx = document.getElementById('dailySalesChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.daily_sales.map(d => d.date),
+                    datasets: [{
+                        label: 'Ingresos ($)',
+                        data: data.daily_sales.map(d => d.revenue),
+                        fill: true,
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        pointBackgroundColor: 'rgba(255, 99, 132, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    } catch (error) {
+        console.error('Error updating sales chart:', error);
+    }
+}
+
+// Best Sellers Chart
+async function fetchBestSellers() {
+    try {
+        const response = await fetch('/api/sales_report');
+        if (!response.ok) {
+            console.warn(`API endpoint returned ${response.status}: ${response.statusText}`);
+            
+            // If API not available, show mock data
+            renderMockBestSellersChart();
+            return;
+        }
+        
+        const data = await response.json();
+        
+        if (!data.best_sellers || !Array.isArray(data.best_sellers) || data.best_sellers.length === 0) {
+            console.warn('Best sellers data missing or empty:', data);
+            renderMockBestSellersChart();
+            return;
+        }
+        
+        // Render actual data
+        const ctx = document.getElementById('bestSellersChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.best_sellers.map(item => item.name),
+                datasets: [{
+                    label: 'Unidades Vendidas',
+                    data: data.best_sellers.map(item => item.sold),
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching best sellers data:', error);
+        renderMockBestSellersChart();
+    }
+}
+
+// Sales Report Chart
+async function fetchSalesReport() {
+    try {
+        const response = await fetch('/api/sales_report');
+        if (!response.ok) {
+            console.warn(`API endpoint returned ${response.status}: ${response.statusText}`);
+            
+            // If API not available, show mock data
+            renderMockSalesChart();
+            return;
+        }
+        
+        const data = await response.json();
+        
+        if (!data.daily_sales || !Array.isArray(data.daily_sales) || data.daily_sales.length === 0) {
+            console.warn('Daily sales data missing or empty:', data);
+            renderMockSalesChart();
+            return;
+        }
+        
+        // Render actual data
+        const ctx = document.getElementById('dailySalesChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.daily_sales.map(d => d.date),
+                datasets: [{
+                    label: 'Ingresos ($)',
+                    data: data.daily_sales.map(d => d.revenue),
+                    fill: true,
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    pointBackgroundColor: 'rgba(255, 99, 132, 1)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching sales report data:', error);
+        renderMockSalesChart();
+    }
+}
+
+// Mock data rendering functions (if API fails)
+function renderMockPeakHoursChart() {
+    const hours = [];
+    const counts = [];
+    
+    // Generate mock data with a peak during lunch and dinner hours
+    for (let i = 0; i < 24; i++) {
+        hours.push(`${i.toString().padStart(2, '0')}:00`);
+        
+        // More orders during lunch (12-14) and dinner (18-20)
+        if (i >= 12 && i <= 14) {
+            counts.push(Math.floor(Math.random() * 15) + 20); // 20-35 orders
+        } else if (i >= 18 && i <= 20) {
+            counts.push(Math.floor(Math.random() * 20) + 25); // 25-45 orders
+        } else if (i >= 7 && i <= 22) {
+            counts.push(Math.floor(Math.random() * 10) + 5); // 5-15 orders
+        } else {
+            counts.push(Math.floor(Math.random() * 3)); // 0-3 orders (late night)
+        }
+    }
+    
+    const ctx = document.getElementById('peakHoursChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: hours,
+            datasets: [{
+                label: 'Órdenes',
+                data: counts,
+                backgroundColor: 'rgba(255, 159, 64, 0.6)',
+                borderColor: 'rgba(255, 159, 64, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+function renderMockBestSellersChart() {
+    const products = [
+        'Gordita Chicharrón', 
+        'Gordita Deshebrada', 
+        'Gordita Queso', 
+        'Gordita Picadillo', 
+        'Gordita Frijol'
+    ];
+    
+    const sales = [
+        Math.floor(Math.random() * 50) + 100, // 100-150
+        Math.floor(Math.random() * 40) + 80,  // 80-120
+        Math.floor(Math.random() * 30) + 70,  // 70-100
+        Math.floor(Math.random() * 30) + 50,  // 50-80
+        Math.floor(Math.random() * 20) + 40   // 40-60
+    ];
+    
+    const ctx = document.getElementById('bestSellersChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: products,
+            datasets: [{
+                label: 'Unidades Vendidas',
+                data: sales,
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+function renderMockSalesChart() {
+    const dates = [];
+    const sales = [];
+    
+    // Generate last 30 days of data
+    const today = new Date();
+    for (let i = 30; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(today.getDate() - i);
+        dates.push(date.toLocaleDateString('es-MX'));
+        
+        // More sales on weekends (0 = Sunday, 6 = Saturday)
+        const dayOfWeek = date.getDay();
+        if (dayOfWeek === 0 || dayOfWeek === 6) {
+            sales.push(Math.floor(Math.random() * 1000) + 4000); // 4000-5000
+        } else if (dayOfWeek === 5) { // Friday
+            sales.push(Math.floor(Math.random() * 1000) + 3500); // 3500-4500
+        } else {
+            sales.push(Math.floor(Math.random() * 1000) + 2500); // 2500-3500
+        }
+    }
+    
+    const ctx = document.getElementById('dailySalesChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: dates,
+            datasets: [{
+                label: 'Ingresos ($)',
+                data: sales,
+                fill: true,
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 2,
+                tension: 0.4,
+                pointBackgroundColor: 'rgba(255, 99, 132, 1)'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                },
+                x: {
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                }
+            }
+        }
+    });
+}    
+function debugAPIEndpoints() {
+    const apiEndpoints = [
+        '/api/dashboard/summary',
+        '/api/ingredients/stock',
+        '/api/orders/peak_hours',
+        '/api/orders/recent',
+        '/api/sales_report'
+    ];
+    
+    console.log('Starting API endpoints debug check...');
+    
+    apiEndpoints.forEach(async (endpoint) => {
+        try {
+            const response = await fetch(endpoint);
+            console.log(`API Endpoint ${endpoint}: Status ${response.status} ${response.statusText}`);
+            
+            if (response.ok) {
+                const data = await response.json();
+                console.log(`API Endpoint ${endpoint}: Data structure`, data);
+            }
+        } catch (error) {
+            console.error(`API Endpoint ${endpoint}: Error`, error);
+        }
+    });
+}
+
+async function fetchPeakHours() {
+    try {
+        const response = await fetch('/api/sales_report');
+        if (!response.ok) {
+            console.warn(`API endpoint returned ${response.status}: ${response.statusText}`);
+            // If API not available, show mock data
+            renderMockPeakHoursChart();
+            return;
+        }
+        
+        const data = await response.json();
+        
+        // Check if the peak_hours data exists in the sales_report response
+        if (!data.peak_hours || !Array.isArray(data.peak_hours) || data.peak_hours.length === 0) {
+            console.warn('Peak hours data missing or empty:', data);
+            renderMockPeakHoursChart();
+            return;
+        }
+        
+        // Sort the hours numerically to ensure proper order
+        const sortedHourData = [...data.peak_hours].sort((a, b) => a.hour - b.hour);
+        
+        // Format the hour labels (add :00 to make it clear they are hours)
+        const hourLabels = sortedHourData.map(h => `${h.hour.toString().padStart(2, '0')}:00`);
+        
+        // Get the order counts
+        const orderCounts = sortedHourData.map(h => h.orders);
+        
+        // Render actual data
+        const ctx = document.getElementById('peakHoursChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: hourLabels,
+                datasets: [{
+                    label: 'Órdenes',
+                    data: orderCounts,
+                    backgroundColor: 'rgba(255, 159, 64, 0.6)',
+                    borderColor: 'rgba(255, 159, 64, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching peak hours data:', error);
+        renderMockPeakHoursChart();
+    }
+}
+// Improved initialization code
+document.addEventListener('DOMContentLoaded', function() {
+    // Add error handling to each chart initialization
+    Promise.allSettled([
+        fetchIngredientStock(),
+        fetchPeakHours(),
+        fetchBestSellers(),
+        fetchSalesReport(),
+        fetchRecentOrders(),
+        updateDashboardSummary()
+    ]).then(results => {
+        // Check results of each initialization task
+        results.forEach((result, index) => {
+            if (result.status === 'rejected') {
+                const functions = ['Ingredient Stock', 'Peak Hours', 'Best Sellers', 'Sales Report', 'Recent Orders', 'Dashboard Summary'];
+                console.error(`Failed to initialize ${functions[index]}: ${result.reason}`);
+            }
+        });
+        
+        // Hook up the period buttons for daily sales chart
+        const periodButtons = document.querySelectorAll('.px-3.py-1.text-xs.bg-gray-200.rounded');
+        
+        // Add data-period attributes if they don't exist
+        if (periodButtons.length === 3) {
+            const periods = [7, 30, 365];
+            periodButtons.forEach((button, index) => {
+                if (!button.hasAttribute('data-period')) {
+                    button.setAttribute('data-period', periods[index]);
+                }
+                
+                // Add click event listener
+                button.addEventListener('click', function() {
+                    const period = this.getAttribute('data-period');
+                    updateDailySalesChart(period);
+                    
+                    // Highlight active button
+                    periodButtons.forEach(btn => {
+                        btn.classList.remove('bg-yellow-500', 'text-white');
+                        btn.classList.add('bg-gray-200');
+                    });
+                    this.classList.remove('bg-gray-200');
+                    this.classList.add('bg-yellow-500', 'text-white');
+                });
+            });
+            
+            // Set the first button (7 days) as active by default
+            periodButtons[0].click();
+        }
+    });
+});
+
+// Add debug toggle function for development
+function toggleDebugMode() {
+    // Create debug panel if it doesn't exist
+    if (!document.getElementById('debug-panel')) {
+        const debugPanel = document.createElement('div');
+        debugPanel.id = 'debug-panel';
+        debugPanel.className = 'fixed bottom-0 left-0 right-0 bg-gray-800 text-white p-4 z-50 max-h-64 overflow-y-auto';
+        debugPanel.innerHTML = `
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="font-bold">Debug Panel</h3>
+                <button id="close-debug" class="text-white bg-red-500 rounded px-2">×</button>
+            </div>
+            <div id="debug-log" class="text-xs font-mono"></div>
+            <div class="mt-2 space-x-2">
+                <button id="check-apis" class="bg-blue-500 text-white px-2 py-1 rounded text-xs">Check APIs</button>
+                <button id="retry-all" class="bg-green-500 text-white px-2 py-1 rounded text-xs">Retry All</button>
+                <button id="force-mock" class="bg-yellow-500 text-white px-2 py-1 rounded text-xs">Use Mock Data</button>
+            </div>
+        `;
+        document.body.appendChild(debugPanel);
+        
+        // Add event listeners to debug buttons
+        document.getElementById('close-debug').addEventListener('click', toggleDebugMode);
+        document.getElementById('check-apis').addEventListener('click', debugAPIEndpoints);
+        document.getElementById('retry-all').addEventListener('click', () => {
+            fetchIngredientStock();
+            fetchPeakHours();
+            fetchBestSellers();
+            fetchSalesReport();
+            fetchRecentOrders();
+            updateDashboardSummary();
+        });
+        document.getElementById('force-mock').addEventListener('click', () => {
+            renderMockPeakHoursChart();
+            renderMockBestSellersChart();
+            renderMockSalesChart();
+            
+            // Also update the cards with mock data
+            document.getElementById('orders-today').textContent = '36';
+            document.getElementById('sales-today').textContent = '$2,450.75';
+            document.getElementById('top-product').textContent = 'Gordita Chicharrón';
+            document.getElementById('inventory-alerts').textContent = '2';
+            
+            // Mock ingredient stock chart
+            const ctx = document.getElementById('ingredientStockChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Masa', 'Chicharrón', 'Deshebrada', 'Queso', 'Picadillo', 'Frijol'],
+                    datasets: [{
+                        label: 'Nivel (Unidad)',
+                        data: [75, 45, 60, 80, 55, 90],
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.6)',
+                            'rgba(255, 99, 132, 0.6)',
+                            'rgba(255, 206, 86, 0.6)',
+                            'rgba(54, 162, 235, 0.6)',
+                            'rgba(153, 102, 255, 0.6)',
+                            'rgba(255, 159, 64, 0.6)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            // Mock recent orders
+            document.getElementById('recent-orders-table').innerHTML = generatePlaceholderOrders();
+        });
+        
+        // Override console.log for debug panel
+        const originalConsoleLog = console.log;
+        const originalConsoleWarn = console.warn;
+        const originalConsoleError = console.error;
+        
+        console.log = function() {
+            originalConsoleLog.apply(console, arguments);
+            addToDebugLog('LOG', arguments);
+        };
+        
+        console.warn = function() {
+            originalConsoleWarn.apply(console, arguments);
+            addToDebugLog('WARN', arguments);
+        };
+        
+        console.error = function() {
+            originalConsoleError.apply(console, arguments);
+            addToDebugLog('ERROR', arguments);
+        };
+        
+        function addToDebugLog(type, args) {
+            const debugLog = document.getElementById('debug-log');
+            const timestamp = new Date().toISOString().substr(11, 8);
+            const message = Array.from(args).map(arg => {
+                if (typeof arg === 'object') {
+                    try {
+                        return JSON.stringify(arg);
+                    } catch (e) {
+                        return String(arg);
+                    }
+                }
+                return String(arg);
+            }).join(' ');
+            
+            const logItem = document.createElement('div');
+            logItem.className = type === 'ERROR' ? 'text-red-400' : (type === 'WARN' ? 'text-yellow-400' : 'text-gray-300');
+            logItem.textContent = `[${timestamp}] [${type}] ${message}`;
+            debugLog.appendChild(logItem);
+            
+            // Auto-scroll to bottom
+            debugLog.scrollTop = debugLog.scrollHeight;
+        }
+    } else {
+        // Remove debug panel if it exists
+        const debugPanel = document.getElementById('debug-panel');
+        debugPanel.remove();
+        
+        // Restore original console methods
+        console.log = console._originalLog || console.log;
+        console.warn = console._originalWarn || console.warn;
+        console.error = console._originalError || console.error;
+    }
+}
+
+// Add keyboard shortcut for toggling debug panel (Ctrl+Shift+D)
+document.addEventListener('keydown', function(event) {
+    if (event.ctrlKey && event.shiftKey && event.key === 'D') {
+        event.preventDefault();
+        toggleDebugMode();
+    }
+});
+    </script>
+</body>
+</html>

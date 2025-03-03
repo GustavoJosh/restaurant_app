@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Branch Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto mt-10">
+        <!-- Page Header -->
+        <h1 class="text-3xl font-bold text-yellow-600 mb-5">Branch Management</h1>
+        <a href="{{ url_for('home') }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
+            Back to Index
+        </a>
+
+        <!-- Branch Management Table -->
+        <table class="table-auto w-full bg-white shadow-md rounded-lg mt-5">
+            <thead>
+                <tr class="bg-yellow-600 text-white">
+                    <th class="px-4 py-2">Branch ID</th>
+                    <th class="px-4 py-2">Name</th>
+                    <th class="px-4 py-2">Address</th>
+                    <th class="px-4 py-2">Opening Hours</th>
+                    <th class="px-4 py-2">Status</th>
+                    <th class="px-4 py-2">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for branch in branches %}
+                <tr class="text-center border-b">
+                    <td class="px-4 py-2">{{ branch.id }}</td>
+                    <td class="px-4 py-2">{{ branch.name }}</td>
+                    <td class="px-4 py-2">{{ branch.location }}</td>
+                    <td class="px-4 py-2">
+                        {% if branch.opening_hours %}
+                        {{ branch.opening_hours }}
+                        {% else %}
+                        <span class="text-gray-500 italic">Not Set</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-2">
+                        {% if branch.is_open %}
+                        <span class="text-green-500 font-bold">Open</span>
+                        {% else %}
+                        <span class="text-red-500 font-bold">Closed</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-2">
+                        <form method="POST" action="{{ url_for('admin_branches') }}">
+                            <input type="hidden" name="branch_id" value="{{ branch.id }}">
+                            {% if branch.is_open %}
+                            <button type="submit" name="action" value="close" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">
+                                Close
+                            </button>
+                            {% else %}
+                            <button type="submit" name="action" value="open" class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">
+                                Open
+                            </button>
+                            {% endif %}
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order History</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+</head>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Bootstrap JS (Optional, for modal functionality) -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+<body>
+    <div class="container">
+        <h1 class="mt-4">Order History</h1>
+
+        <!-- Filter Form -->
+        <form method="GET" class="mb-4">
+            <div class="row">
+                <div class="col-md-3">
+                    <label for="status">Status:</label>
+                <select id="status" name="status" class="form-control">
+                    <option value="all">All</option>
+                    <option value="pending">Pending</option>
+                    <option value="completed">Completed</option>
+                    <option value="canceled">Canceled</option>
+                </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="start_date">Start Date:</label>
+                <input type="date" id="start_date" name="start_date" class="form-control" placeholder="Select start date">
+
+                <label for="end_date">End Date:</label>
+                <input type="date" id="end_date" name="end_date" class="form-control" placeholder="Select end date">
+
+                </div>
+                <div class="col-md-3">
+                    <label>Branch:</label>
+                    <input type="number" name="branch_id" class="form-control" placeholder="Branch ID">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary mt-3">Filter</button>
+        </form>
+
+        <!-- Order Table -->
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Table</th>
+                <th>Status</th>
+                <th>Branch</th>
+                <th>Date</th>
+                <th>Details</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td>{{ order.id }}</td>
+                <td>{{ order.table_number }}</td>
+                <td>
+                    {% if order.status == "completed" %}
+                        <span class="badge badge-success">Completed</span>
+                    {% elif order.status == "pending" %}
+                        <span class="badge badge-warning">Pending</span>
+                    {% else %}
+                        <span class="badge badge-danger">Canceled</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if order.branch_id %}
+                        {{ order.branch_id }}
+                    {% else %}
+                        <span class="text-muted">N/A</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if order.created_at %}
+                        {{ order.created_at.strftime('%Y-%m-%d %H:%M') }}
+                    {% else %}
+                        <span class="text-muted">N/A</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <button class="btn btn-info btn-sm" onclick="showOrderDetails('{{ order.id }}')">View</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+
+    <!-- Modal for Order Details -->
+    <div id="orderModal" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Order Details</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <ul id="orderDetailsList"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showOrderDetails(orderId) {
+            fetch(`/api/order_details/${orderId}`)
+                .then(response => response.json())
+                .then(data => {
+                    let detailsList = document.getElementById("orderDetailsList");
+                    detailsList.innerHTML = "";
+                    data.items.forEach(item => {
+                        let li = document.createElement("li");
+                        li.innerHTML = `<strong>${item.quantity}x ${item.name}</strong><br>
+                                        <small>Ingredients: ${item.ingredients}</small>`;
+                        detailsList.appendChild(li);
+                    });
+                    $("#orderModal").modal("show");
+                });
+        }
+
+    </script>
+</body>
+</html>
