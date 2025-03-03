@@ -5,7 +5,6 @@ from models.menu import MenuItem
 from models.branch import Branch
 from models.menu import Recipe  # Add this missing import
 from models.stock import Ingredient  # Add this missing import
-from models.associations import menu_item_branches
 from blueprints.admin import admin_bp
 
 
@@ -46,11 +45,10 @@ def admin_menu():
         for item in menu_items:
             print(f"Menu Item: {item.name}, Stock: {menu_stock.get(item.id, 0)}")
 
-        return render_template("admin_menu.html", menu_items=menu_items, menu_stock=menu_stock, branches=branches)
+        return render_template("admin.admin_menu.html", menu_items=menu_items, menu_stock=menu_stock, branches=branches)
     except Exception as e:
         flash(f"Error loading admin menu: {str(e)}", "danger")
         return redirect(url_for("home"))
-
 
 @admin_bp.route("/menu/add", methods=["GET", "POST"])
 def add_menu_item():
@@ -84,3 +82,55 @@ def add_menu_item():
 
     branches = Branch.query.all()  # Fetch all branches
     return render_template("add_menu_item.html", branches=branches)
+
+@admin_bp.route("/admin/menu/delete/<int:id>", methods=["POST"])
+def delete_menu_item(id):
+    try:
+        item = MenuItem.query.get_or_404(id)
+
+        # Instead of deleting, perform a soft delete:
+        item.is_active = False
+        db.session.commit()
+
+        flash("Menu item deactivated successfully!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error deactivating menu item: {str(e)}", "danger")
+    
+    return redirect(url_for("admin_menu"))
+
+@admin_bp.route("/admin/menu/edit/<int:id>", methods=["GET", "POST"])
+def edit_menu_item(id):
+    item = MenuItem.query.get_or_404(id)
+    
+    if request.method == "POST":
+        try:
+            item.name = request.form["name"]
+            item.price = float(request.form["price"])
+            
+            # Clear existing branch associations and add new ones
+            branch_ids = request.form.getlist("branch_ids")
+            
+            # Remove all existing branch relationships
+            item.branches = []
+            
+            # Add new branch relationships
+            for branch_id in branch_ids:
+                branch = Branch.query.get(branch_id)
+                if branch:
+                    item.branches.append(branch)
+                    
+            db.session.commit()
+            flash("Menu item updated successfully!", "success")
+            return redirect(url_for("admin_menu"))
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error updating menu item: {str(e)}", "danger")
+            return redirect(url_for("admin_menu"))
+            
+    # Get all branches for the form
+    branches = Branch.query.all()
+    # Get current branch IDs for this menu item
+    current_branch_ids = [branch.id for branch in item.branches]
+    
+    return render_template("edit_menu_item.html", item=item, branches=branches, current_branch_ids=current_branch_ids)
