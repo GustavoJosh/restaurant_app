@@ -19,16 +19,16 @@
         
             <!-- Navigation Links -->
             <nav class="flex flex-col space-y-4 w-full text-center">
-                <a href="{{ url_for('admin_menu') }}" class="py-3 px-4 hover:bg-yellow-500 rounded-lg transition-all">1 - Manejo del menu</a>
-                <a href="{{ url_for('admin_ingredients') }}" class="py-3 px-4 hover:bg-yellow-500 rounded-lg transition-all">2 - Manejo del producto</a>
-                <a href="{{ url_for('admin_branches') }}" class="py-3 px-4 hover:bg-yellow-500 rounded-lg transition-all">3 - Sucursales</a>
+                <a href="{{ url_for('admin.admin_menu') }}" class="py-3 px-4 hover:bg-yellow-500 rounded-lg transition-all">1 - Manejo del menu</a>
+                <a href="{{ url_for('admin.admin_ingredients') }}" class="py-3 px-4 hover:bg-yellow-500 rounded-lg transition-all">2 - Manejo del producto</a>
+                <a href="{{ url_for('admin.admin_branches') }}" class="py-3 px-4 hover:bg-yellow-500 rounded-lg transition-all">3 - Sucursales</a>
                 <button class="py-3 px-4 bg-yellow-500 rounded-lg cursor-not-allowed">4 - Sales Reports</button>
                 <button class="py-3 px-4 bg-yellow-500 rounded-lg cursor-not-allowed">5 - Employee Management</button>
                 <button class="py-3 px-4 bg-yellow-500 rounded-lg cursor-not-allowed">6 - Feedback & Complaints</button>
-                <a href="{{ url_for('admin_orders') }}" class="py-3 px-4 hover:bg-yellow-500 rounded-lg transition-all">7 - Modulo Cocina</a>
-                <a href="{{ url_for('sell_point') }}" class="py-3 px-4 hover:bg-yellow-500 rounded-lg transition-all">8 - Punto de venta</a>
-                <a href="{{ url_for('order_history') }}" class="py-3 px-4 hover:bg-yellow-500 rounded-lg transition-all">9 - Historial de ventas</a>
-                <a href="{{ url_for('waiter_sellpoint') }}" class="py-3 px-4 hover:bg-yellow-500 rounded-lg transition-all">10 - Modulo Meseros</a>
+                <a href="{{ url_for('admin.admin_orders') }}" class="py-3 px-4 hover:bg-yellow-500 rounded-lg transition-all">7 - Modulo Cocina</a>
+                <a href="{{ url_for('pos.sell_point') }}" class="py-3 px-4 hover:bg-yellow-500 rounded-lg transition-all">8 - Punto de venta</a>
+                <a href="{{ url_for('admin.order_history') }}" class="py-3 px-4 hover:bg-yellow-500 rounded-lg transition-all">9 - Historial de ventas</a>
+                <a href="{{ url_for('pos.waiter_sellpoint') }}" class="py-3 px-4 hover:bg-yellow-500 rounded-lg transition-all">10 - Modulo Meseros</a>
             </nav>
         </aside>
 
@@ -72,7 +72,7 @@
     <!-- Fetch and Initialize Chart -->
     <script>
         async function fetchIngredientStock() {
-            const response = await fetch('/api/ingredients/stock');
+            const response = await fetch('/ingredients/stock');
             const data = await response.json();
 
             const ctx = document.getElementById('ingredientStockChart').getContext('2d');

@@ -3,5 +3,8 @@ from flask import Blueprint
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
-# Import routes to register them with the blueprint
-from . import menu_routes, ingredient_routes, recipe_routes, order_routes, branch_routes
+# Move imports below the Blueprint creation
+# Import routes AFTER blueprint is defined
+from . import menu_routes, ingredient_routes, recipe_routes, branch_routes
+# Import order_routes last to avoid circular import
+from . import order_routes

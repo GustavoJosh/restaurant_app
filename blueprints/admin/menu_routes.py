@@ -45,7 +45,7 @@ def admin_menu():
         for item in menu_items:
             print(f"Menu Item: {item.name}, Stock: {menu_stock.get(item.id, 0)}")
 
-        return render_template("admin.admin_menu.html", menu_items=menu_items, menu_stock=menu_stock, branches=branches)
+        return render_template("admin_menu.html", menu_items=menu_items, menu_stock=menu_stock, branches=branches)
     except Exception as e:
         flash(f"Error loading admin menu: {str(e)}", "danger")
         return redirect(url_for("home"))
