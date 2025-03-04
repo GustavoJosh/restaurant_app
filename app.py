@@ -8,6 +8,12 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import func, text
 import os
 import random
+from services import update_stock, update_menu_item_stock
+from models.menu import MenuItem, Recipe
+from models.orders import Order, OrderItem
+from models.stock import Ingredient
+from models.branch import Branch
+from models.associations import menu_item_branches
 # Initialize Flask Extensions
 db = SQLAlchemy()
 socketio = SocketIO()
@@ -15,13 +21,6 @@ migrate = Migrate()
 cors = CORS()
 
 # Import services and models
-from services import update_stock, update_menu_item_stock
-from models.menu import MenuItem, Recipe
-from models.orders import Order, OrderItem
-from models.stock import Ingredient
-from models.branch import Branch
-from models.associations import menu_item_branches
-
 
 def create_app():
     """Factory function to create and configure the Flask app."""
@@ -54,10 +53,12 @@ def create_app():
     app.register_blueprint(api_bp, url_prefix='/api')
     app.register_blueprint(pos_bp, url_prefix='/pos')
     
-    return app
+  
 
 # Create the app instance
 app = create_app()
+db = SQLAlchemy()
+
 
 @app.route("/test")
 def test_template():

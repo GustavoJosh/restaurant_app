@@ -15,10 +15,12 @@ from services import update_stock
 from flask_socketio import SocketIO
 import socketio
 import random
+from flask import current_app
 
-@api_bp.route("/api/sales_report")
+@api_bp.route("/sales_report")
 def sales_report():
     try:
+        
         # Get date range parameters (with defaults)
         start_date = request.args.get("start_date")
         end_date = request.args.get("end_date")
@@ -51,7 +53,7 @@ def sales_report():
         if branch_id and branch_id.isdigit():
             branch_filter = f"AND o.branch_id = {branch_id}"
         
-        # 1. Daily Sales Query - Using raw SQL for better performance
+        # Daily Sales Query using raw SQL for better performance
         daily_sales_sql = f"""
         SELECT 
             DATE(o.created_at) as date,
@@ -93,7 +95,7 @@ def sales_report():
                     'revenue': round(2500 + 1500 * random.random(), 2)  # Random values between 2500-4000
                 })
         
-        # 2. Peak Hours Query
+        # Peak Hours Query
         peak_hours_sql = f"""
         SELECT 
             EXTRACT(HOUR FROM o.created_at) as hour,
@@ -126,22 +128,7 @@ def sales_report():
             
         peak_hours = [{'hour': hour, 'orders': count} for hour, count in hours_dict.items()]
         
-        # If no results, provide sample data
-        if sum(h['orders'] for h in peak_hours) == 0:
-            for hour in range(24):
-                # More orders during lunch and dinner
-                if 11 <= hour <= 14:  # Lunch
-                    orders = int(15 + 10 * random.random())
-                elif 17 <= hour <= 21:  # Dinner
-                    orders = int(20 + 15 * random.random())
-                elif 8 <= hour <= 22:  # Regular hours
-                    orders = int(5 + 5 * random.random())
-                else:  # Early morning/late night
-                    orders = int(2 * random.random())
-                    
-                peak_hours[hour]['orders'] = orders
-        
-        # 3. Best Sellers Query
+        # Best Sellers Query
         best_sellers_sql = f"""
         SELECT 
             mi.id,
@@ -174,25 +161,6 @@ def sales_report():
                 'sold': row[2]
             })
             
-        # If no results, provide sample data
-        if not best_sellers:
-            sample_products = [
-                'Gordita Chicharrón', 
-                'Gordita Deshebrada', 
-                'Gordita Queso', 
-                'Gordita Picadillo', 
-                'Gordita Frijol',
-                'Refresco',
-                'Agua de Jamaica'
-            ]
-            
-            for i, name in enumerate(sample_products, 1):
-                best_sellers.append({
-                    'id': i,
-                    'name': name,
-                    'sold': int(50 + 100 * random.random() * (1 - i/10))  # Higher values for first items
-                })
-        
         # Return all data
         return jsonify({
             'daily_sales': daily_sales,
@@ -223,8 +191,8 @@ def sales_report():
                 {'id': 5, 'name': 'Gordita Picadillo', 'sold': int(30 + 30 * random.random())}
             ]
         })
-    
-@api_bp.route("/api/order_details/<int:order_id>")
+  
+@api_bp.route("/order_details/<int:order_id>")
 def order_details(order_id):
     try:
         order = Order.query.get_or_404(order_id)
@@ -260,7 +228,7 @@ def order_details(order_id):
     except Exception as e:
         return jsonify({"error": f"Error fetching order details: {str(e)}"}), 500
 
-@api_bp.route("/api/ingredients/stock")
+@api_bp.route("/ingredients/stock")
 def get_ingredient_stock():
     try:
         ingredients = db.session.query(Ingredient).filter_by(is_active=True).all()
@@ -272,7 +240,7 @@ def get_ingredient_stock():
     except Exception as e:
         return jsonify({"error": f"Error fetching stock data: {str(e)}"}), 500
     
-@api_bp.route("/api/order", methods=["POST"])
+@api_bp.route("/order", methods=["POST"])
 def place_order():
     try:
         data = request.json
@@ -347,7 +315,7 @@ def place_order():
         print(f"🔥 Error processing order: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
-@api_bp.route("/api/kitchen/orders", methods=["GET"])
+@api_bp.route("/kitchen/orders", methods=["GET"])
 def kitchen_orders():
     try:
         orders = db.session.query(Order).filter(Order.status != "completed").all()
@@ -369,7 +337,7 @@ def kitchen_orders():
         print(f"Error fetching kitchen orders: {str(e)}")
         return jsonify({"error": "Error fetching orders", "details": str(e)}), 500
 
-@api_bp.route("/api/order/complete/<int:order_id>", methods=["POST"])
+@api_bp.route("/order/complete/<int:order_id>", methods=["POST"])
 def complete_order(order_id):
     try:
         order = db.session.get(Order, order_id)
@@ -408,7 +376,7 @@ def complete_order(order_id):
         db.session.rollback()
         return jsonify({"error": f"Error completing order: {str(e)}"}), 500
         
-@api_bp.route("/api/order/cancel/<int:order_id>", methods=["POST"])
+@api_bp.route("/order/cancel/<int:order_id>", methods=["POST"])
 def cancel_order(order_id):
     try:
         order = db.session.get(Order, order_id)
@@ -435,7 +403,7 @@ def cancel_order(order_id):
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
-@api_bp.route("/api/orders/recent")
+@api_bp.route("/orders/recent")
 def recent_orders():
     try:
         # Get the 5 most recent orders
@@ -492,7 +460,7 @@ def recent_orders():
             }
         ])
     
-@api_bp.route("/api/dashboard/summary")
+@api_bp.route("/dashboard/summary")
 def dashboard_summary():
     try:
         # Calculate today's date (with time at 00:00:00)

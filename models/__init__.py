@@ -3,8 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 
 # Create the database instance (without initializing it)
 # This will be imported and initialized in app.py
-db = SQLAlchemy()
 
+from app import db
 # Import models for easy access
 from .menu import MenuItem, Recipe
 from .orders import Order, OrderItem
