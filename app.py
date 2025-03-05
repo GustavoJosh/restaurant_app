@@ -1,12 +1,10 @@
 # app.py
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, abort, current_app
-from flask_socketio import SocketIO, emit
+from flask import Flask
+from flask_socketio import SocketIO
 from flask_migrate import Migrate
 from flask_cors import CORS
-from datetime import datetime, timezone, timedelta
 import os
-import random
-from database import db  # ✅ Only import db from here
+from database import db  
 
 # Initialize Flask Extensions
 socketio = SocketIO()
