@@ -1,5 +1,5 @@
 # models/stock.py
-from models import db
+from database import db
 
 class Ingredient(db.Model):
     __tablename__ = 'raw_ingredients'

@@ -1,5 +1,5 @@
 # models/orders.py
-from models import db
+from database import db
 
 class Order(db.Model):
     __tablename__ = 'orders'

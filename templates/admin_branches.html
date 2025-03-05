@@ -47,7 +47,7 @@
                         {% endif %}
                     </td>
                     <td class="px-4 py-2">
-                        <form method="POST" action="{{ url_for('admin_branches') }}">
+                        <form method="POST" action="{{ url_for('admin.admin_branches') }}">
                             <input type="hidden" name="branch_id" value="{{ branch.id }}">
                             {% if branch.is_open %}
                             <button type="submit" name="action" value="close" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">

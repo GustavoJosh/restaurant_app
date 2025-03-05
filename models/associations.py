@@ -1,5 +1,5 @@
 # models/associations.py
-from models import db
+from database import db
 
 menu_item_branches = db.Table(
     'menu_item_branches',

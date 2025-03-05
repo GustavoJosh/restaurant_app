@@ -23,17 +23,17 @@ def add_ingredient():
             allowed_units = ["kg", "g", "l", "ml", "piece"]
             if unit not in allowed_units:
                 flash(f"Invalid unit. Must be one of: {', '.join(allowed_units)}", "danger")
-                return redirect(url_for("add_ingredient"))
+                return redirect(url_for("admin.add_ingredient"))
                 
             new_ingredient = Ingredient(name=name, total_quantity=total_quantity, unit=unit)
             db.session.add(new_ingredient)
             db.session.commit()
             flash("Ingredient added successfully!", "success")
-            return redirect(url_for("admin_ingredients"))
+            return redirect(url_for("admin.admin_ingredients"))
         except Exception as e:
             db.session.rollback()
             flash(f"Error adding ingredient: {str(e)}", "danger")
-            return redirect(url_for("add_ingredient"))
+            return redirect(url_for("admin.add_ingredient"))
             
     return render_template("add_ingredient.html")
 
@@ -51,7 +51,7 @@ def edit_ingredient(id):
             allowed_units = ["kg", "g", "l", "ml", "piece"]
             if ingredient.unit not in allowed_units:
                 flash(f"Invalid unit. Must be one of: {', '.join(allowed_units)}", "danger")
-                return redirect(url_for("edit_ingredient", id=id))
+                return redirect(url_for("admin.edit_ingredient", id=id))
                 
             db.session.commit()
             
@@ -59,11 +59,11 @@ def edit_ingredient(id):
             update_menu_item_stock(id)
             
             flash("Ingredient updated successfully!", "success")
-            return redirect(url_for("admin_ingredients"))
+            return redirect(url_for("admin.admin_ingredients"))
         except Exception as e:
             db.session.rollback()
             flash(f"Error updating ingredient: {str(e)}", "danger")
-            return redirect(url_for("edit_ingredient", id=id))
+            return redirect(url_for("admin.edit_ingredient", id=id))
             
     return render_template("edit_ingredient.html", ingredient=ingredient)
 
@@ -85,4 +85,4 @@ def delete_ingredient(id):
         db.session.rollback()
         flash(f"Error deactivating ingredient: {str(e)}", "danger")
     
-    return redirect(url_for("admin_ingredients"))
+    return redirect(url_for("admin.admin_ingredients"))

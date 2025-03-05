@@ -13,10 +13,10 @@
         <p>Select a dish and add multiple required ingredients.</p>
         
         <!-- Navigation Buttons -->
-        <a href="{{ url_for('admin_recipes') }}" class="btn btn-secondary mb-3">Back to Recipes</a>
+        <a href="{{ url_for('admin.admin_recipes') }}" class="btn btn-secondary mb-3">Back to Recipes</a>
         
         <!-- Recipe Form -->
-        <form method="POST" action="{{ url_for('add_recipe') }}">
+        <form method="POST" action="{{ url_for('admin.add_recipe') }}">
             <!-- Dish Selection -->
             <div class="form-group">
                 <label for="menu_item_id">Dish</label>

@@ -25,11 +25,11 @@ def add_recipe():
             # Validate input data
             if not ingredient_ids or not quantities or not units:
                 flash("Please provide all required recipe information", "danger")
-                return redirect(url_for("add_recipe"))
+                return redirect(url_for("admin.add_recipe"))
                 
             if len(ingredient_ids) != len(quantities) or len(quantities) != len(units):
                 flash("Mismatch in ingredient data. Please check your inputs.", "danger")
-                return redirect(url_for("add_recipe"))
+                return redirect(url_for("admin.add_recipe"))
 
             # Save each ingredient as a separate entry in the Recipe table
             for i in range(len(ingredient_ids)):
@@ -47,11 +47,11 @@ def add_recipe():
                 update_menu_item_stock(int(ingredient_id))
                 
             flash("Recipe added successfully!", "success")
-            return redirect(url_for("admin_menu"))
+            return redirect(url_for("admin.admin_menu"))
         except Exception as e:
             db.session.rollback()
             flash(f"Error adding recipe: {str(e)}", "danger")
-            return redirect(url_for("add_recipe"))
+            return redirect(url_for("admin.add_recipe"))
 
     menu_items = MenuItem.query.all()
     ingredients = db.session.query(Ingredient).filter_by(is_active=True).all()
@@ -75,7 +75,7 @@ def edit_recipe(id):
             # Validate inputs
             if len(ingredient_ids) != len(quantities) or len(quantities) != len(units):
                 flash("Mismatch in ingredient data. Please check your inputs.", "danger")
-                return redirect(url_for("edit_recipe", id=id))
+                return redirect(url_for("admin.edit_recipe", id=id))
 
             for i in range(len(ingredient_ids)):
                 new_recipe = Recipe(
@@ -88,11 +88,11 @@ def edit_recipe(id):
 
             db.session.commit()
             flash("Recipe updated successfully!", "success")
-            return redirect(url_for("admin_recipes"))
+            return redirect(url_for("admin.admin_recipes"))
         except Exception as e:
             db.session.rollback()
             flash(f"Error updating recipe: {str(e)}", "danger")
-            return redirect(url_for("edit_recipe", id=id))
+            return redirect(url_for("admin.edit_recipe", id=id))
 
     # Fetch menu item and available ingredients
     menu_item = MenuItem.query.get_or_404(id)
@@ -124,4 +124,4 @@ def delete_recipe(id):
         db.session.rollback()
         flash(f"Error deleting recipe: {str(e)}", "danger")
         
-    return redirect(url_for("admin_recipes"))
+    return redirect(url_for("admin.admin_recipes"))

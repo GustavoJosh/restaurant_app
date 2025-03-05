@@ -24,10 +24,10 @@
         {% endwith %}
 
         <!-- Navigation Buttons -->
-        <a href="{{ url_for('admin_menu') }}" class="btn btn-secondary mb-3">Back to Menu</a>
+        <a href="{{ url_for('admin.admin_menu') }}" class="btn btn-secondary mb-3">Back to Menu</a>
 
         <!-- Add Dish Form -->
-        <form method="POST" action="{{ url_for('add_menu_item') }}">
+        <form method="POST" action="{{ url_for('admin.add_menu_item') }}">
             <div class="form-group">
                 <label for="name">Dish Name</label>
                 <input type="text" class="form-control" id="name" name="name" required>

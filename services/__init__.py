@@ -1,5 +1,5 @@
 # services/__init__.py
-from app import db
+from database import db
 from models.stock import Ingredient
 from models.menu import Recipe
 

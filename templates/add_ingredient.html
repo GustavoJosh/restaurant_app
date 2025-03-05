@@ -24,7 +24,7 @@
         {% endwith %}
 
         <!-- Add Ingredient Form -->
-        <form method="POST" action="{{ url_for('add_ingredient') }}">
+        <form method="POST" action="{{ url_for('admin.add_ingredient') }}">
             <div class="form-group">
                 <label for="name">Ingredient Name</label>
                 <input type="text" class="form-control" id="name" name="name" required>

@@ -1,5 +1,5 @@
 # blueprints/admin/menu_routes.py
-from flask import render_template, request, redirect, url_for, flash
+from flask import render_template, request, redirect, flash
 from models import db
 from models.menu import MenuItem
 from models.branch import Branch

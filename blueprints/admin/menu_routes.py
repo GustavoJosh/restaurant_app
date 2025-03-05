@@ -97,7 +97,7 @@ def delete_menu_item(id):
         db.session.rollback()
         flash(f"Error deactivating menu item: {str(e)}", "danger")
     
-    return redirect(url_for("admin_menu"))
+    return redirect(url_for("admin.admin_menu"))
 
 @admin_bp.route("/menu/edit/<int:id>", methods=["GET", "POST"])
 def edit_menu_item(id):
@@ -122,11 +122,11 @@ def edit_menu_item(id):
                     
             db.session.commit()
             flash("Menu item updated successfully!", "success")
-            return redirect(url_for("admin_menu"))
+            return redirect(url_for("admin.admin_menu"))
         except Exception as e:
             db.session.rollback()
             flash(f"Error updating menu item: {str(e)}", "danger")
-            return redirect(url_for("admin_menu"))
+            return redirect(url_for("admin.admin_menu"))
             
     # Get all branches for the form
     branches = Branch.query.all()

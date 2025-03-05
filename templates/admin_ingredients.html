@@ -25,7 +25,7 @@
 
         <!-- Navigation Buttons -->
         <a href="{{ url_for('home') }}" class="btn btn-secondary mb-3">Back to Home</a>
-        <a href="{{ url_for('add_ingredient') }}" class="btn btn-primary mb-3">Add New Ingredient</a>
+        <a href="{{ url_for('admin.add_ingredient') }}" class="btn btn-primary mb-3">Add New Ingredient</a>
 
         <!-- Ingredients Table -->
         <table class="table">
@@ -46,8 +46,8 @@
                     <td>{{ ingredient.total_quantity }}</td>
                     <td>{{ ingredient.unit }}</td>
                     <td>
-                        <a href="{{ url_for('edit_ingredient', id=ingredient.id) }}" class="btn btn-warning btn-sm">Edit</a>
-                        <form action="{{ url_for('delete_ingredient', id=ingredient.id) }}" method="POST" style="display:inline;">
+                        <a href="{{ url_for('admin.edit_ingredient', id=ingredient.id) }}" class="btn btn-warning btn-sm">Edit</a>
+                        <form action="{{ url_for('admin.delete_ingredient', id=ingredient.id) }}" method="POST" style="display:inline;">
                             <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?');">
                                 Delete
                             </button>

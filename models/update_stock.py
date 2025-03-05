@@ -1,6 +1,6 @@
 from models.stock import Ingredient
 from models.menu import Recipe
-from models import db
+from database import db
 
 def update_stock(order_item):
     if order_item.selected_ingredients:
