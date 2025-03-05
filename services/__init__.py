@@ -1,4 +1,7 @@
-from models import Ingredient, Recipe, db  # Import necessary models
+# services/__init__.py
+from app import db
+from models.stock import Ingredient
+from models.menu import Recipe
 
 def update_stock(order_item):
     if order_item.selected_ingredients:  

@@ -16,6 +16,7 @@ from flask_socketio import SocketIO
 import socketio
 import random
 from flask import current_app
+from services import update_stock
 
 @api_bp.route("/sales_report")
 def sales_report():
