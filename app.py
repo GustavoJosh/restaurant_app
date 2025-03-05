@@ -53,28 +53,9 @@ def create_app():
     app.register_blueprint(api_bp, url_prefix='/api')
     app.register_blueprint(pos_bp, url_prefix='/pos')
     
-  
-
 # Create the app instance
 app = create_app()
 db = SQLAlchemy()
-
-
-@app.route("/test")
-def test_template():
-    return render_template("test.html")   
-
-@app.route("/test/waiter")
-def test_waiter():
-    return render_template("test_waiter.html")   
-
-@app.route("/")
-def home():
-    return render_template("index.html")
-
-@app.route("/mobile_dashboard")
-def mobile_dashboard():
-    return render_template("mobile_dashboard.html")
 
 #region SocketIO Things
 @socketio.on("connect")
