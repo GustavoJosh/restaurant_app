@@ -6,12 +6,12 @@ from models.stock import Ingredient  # Add this missing import
 from blueprints.admin import admin_bp
 from services import update_menu_item_stock
 
-@admin_bp.route("/admin/ingredients/")
+@admin_bp.route("/ingredients/")
 def admin_ingredients():
     ingredients = db.session.query(Ingredient).filter_by(is_active=True).all()
     return render_template("admin_ingredients.html", ingredients=ingredients)
 
-@admin_bp.route("/admin/ingredients/add", methods=["GET", "POST"])
+@admin_bp.route("/ingredients/add", methods=["GET", "POST"])
 def add_ingredient():
     if request.method == "POST":
         try:
@@ -37,7 +37,7 @@ def add_ingredient():
             
     return render_template("add_ingredient.html")
 
-@admin_bp.route("/admin/ingredients/edit/<int:id>", methods=["GET", "POST"])
+@admin_bp.route("/ingredients/edit/<int:id>", methods=["GET", "POST"])
 def edit_ingredient(id):
     ingredient = db.session.get(Ingredient, id) or abort(404)
 
@@ -67,7 +67,7 @@ def edit_ingredient(id):
             
     return render_template("edit_ingredient.html", ingredient=ingredient)
 
-@admin_bp.route("/admin/ingredients/delete/<int:id>", methods=["POST"])
+@admin_bp.route("/ingredients/delete/<int:id>", methods=["POST"])
 def delete_ingredient(id):
     try:
         ingredient = db.session.get(Ingredient, id) or abort(404)

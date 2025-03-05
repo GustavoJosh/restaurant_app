@@ -8,12 +8,12 @@ from services import update_menu_item_stock
 from blueprints.admin import admin_bp
 
 
-@admin_bp.route("/admin/recipes")
+@admin_bp.route("/recipes")
 def admin_recipes():
     recipes = Recipe.query.all()
     return render_template("admin.admin_recipes.html", recipes=recipes)
 
-@admin_bp.route("/admin/recipes/add", methods=["GET", "POST"])
+@admin_bp.route("/recipes/add", methods=["GET", "POST"])
 def add_recipe():
     if request.method == "POST":
         try:
@@ -57,7 +57,7 @@ def add_recipe():
     ingredients = db.session.query(Ingredient).filter_by(is_active=True).all()
     return render_template("admin.add_recipe.html", menu_items=menu_items, raw_ingredients=ingredients)
 
-@admin_bp.route("/admin/recipes/edit/<int:id>", methods=["GET", "POST"])
+@admin_bp.route("/recipes/edit/<int:id>", methods=["GET", "POST"])
 def edit_recipe(id):
     # Fetch all recipe items linked to the menu item (multiple ingredients)
     recipe_items = Recipe.query.filter_by(menu_item_id=id).all()
@@ -106,7 +106,7 @@ def edit_recipe(id):
         raw_ingredients=ingredients
     )
 
-@admin_bp.route("/admin/recipes/delete/<int:id>", methods=["POST"])
+@admin_bp.route("/recipes/delete/<int:id>", methods=["POST"])
 def delete_recipe(id):
     try:
         recipe = Recipe.query.get_or_404(id)

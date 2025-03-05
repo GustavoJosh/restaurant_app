@@ -83,7 +83,7 @@ def add_menu_item():
     branches = Branch.query.all()  # Fetch all branches
     return render_template("add_menu_item.html", branches=branches)
 
-@admin_bp.route("/admin/menu/delete/<int:id>", methods=["POST"])
+@admin_bp.route("/menu/delete/<int:id>", methods=["POST"])
 def delete_menu_item(id):
     try:
         item = MenuItem.query.get_or_404(id)
@@ -99,7 +99,7 @@ def delete_menu_item(id):
     
     return redirect(url_for("admin_menu"))
 
-@admin_bp.route("/admin/menu/edit/<int:id>", methods=["GET", "POST"])
+@admin_bp.route("/menu/edit/<int:id>", methods=["GET", "POST"])
 def edit_menu_item(id):
     item = MenuItem.query.get_or_404(id)
     

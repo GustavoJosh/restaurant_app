@@ -1,7 +1,6 @@
 from flask import current_app, render_template
 
 
-
 @current_app.route("/test")
 def test_template():
     return render_template("test.html")   

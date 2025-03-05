@@ -6,11 +6,11 @@ from models import db
 from models.orders import Order
 import datetime
 
-@admin_bp.route("/admin/orders")
+@admin_bp.route("/orders")
 def admin_orders():
     return render_template("admin_orders.html")
 
-@admin_bp.route("/admin/order_history")
+@admin_bp.route("/order_history")
 def order_history():
     try:
         # Get filters from request

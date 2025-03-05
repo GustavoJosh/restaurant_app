@@ -4,7 +4,7 @@ from models import db
 from models.branch import Branch
 from blueprints.admin import admin_bp
 
-@admin_bp.route("/admin/branches", methods=["GET", "POST"])
+@admin_bp.route("/branches", methods=["GET", "POST"])
 def admin_branches():
     if request.method == "POST":
         try:

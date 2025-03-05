@@ -14,6 +14,7 @@ from models.orders import Order, OrderItem
 from models.stock import Ingredient
 from models.branch import Branch
 from models.associations import menu_item_branches
+from database import db
 # Initialize Flask Extensions
 db = SQLAlchemy()
 socketio = SocketIO()
@@ -52,11 +53,11 @@ def create_app():
     app.register_blueprint(admin_bp, url_prefix='/admin')
     app.register_blueprint(api_bp, url_prefix='/api')
     app.register_blueprint(pos_bp, url_prefix='/pos')
+
+    return app
     
 # Create the app instance
 app = create_app()
-db = SQLAlchemy()
-
 #region SocketIO Things
 @socketio.on("connect")
 def handle_connect():
