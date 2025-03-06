@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Management - Doña Pily</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'pily-gold': '#B8860B',
+                        'pily-orange': '#d68c00',
+                        'pily-light': '#FFF8E1',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .gradient-header {
+            background: linear-gradient(90deg, #d68c00 0%, #B8860B 100%);
+        }
+    </style>
+</head>
+<body class="bg-pily-light min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="gradient-header text-white shadow-lg py-4 px-6">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Doña Pily Logo" class="w-12 h-12 mr-3" onerror="this.src='https://via.placeholder.com/48'; this.onerror=null;">
+                <div>
+                    <h1 class="text-2xl font-bold">Doña Pily</h1>
+                    <p class="text-sm">Sistema Administrativo</p>
+                </div>
+            </div>
+            <div>
+                <a href="/" class="bg-white text-pily-orange px-4 py-2 rounded-full hover:bg-gray-100 transition duration-300">
+                    <i class="fas fa-home mr-2"></i>Panel Principal
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto py-8 px-4 flex-grow">
+        <!-- Title Bar -->
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h2 class="text-3xl font-bold text-pily-orange">Menu Management</h2>
+                <p class="text-gray-600">Administra los productos disponibles en tu menú</p>
+            </div>
+            <div class="flex space-x-4">
+                <a href="{{ url_for('admin.add_menu_item') }}" class="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2 rounded-lg shadow-md transition duration-300 flex items-center">
+                    <span class="mr-2">+</span> Add New Dish
+                </a>
+                <a href="{{ url_for('admin.admin_recipes') }}" class="bg-teal-500 hover:bg-teal-600 text-white px-5 py-2 rounded-lg shadow-md transition duration-300 flex items-center">
+                    <span class="mr-2">📋</span> Manage Recipes
+                </a>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-md p-6 card-hover border-l-4 border-blue-500">
+                <h3 class="text-lg font-bold text-gray-700 mb-2">Total Menu Items</h3>
+                <p class="text-3xl font-bold text-blue-500">{{ menu_items|length }}</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-md p-6 card-hover border-l-4 border-green-500">
+                <h3 class="text-lg font-bold text-gray-700 mb-2">Active Items</h3>
+                <div class="text-3xl font-bold text-green-500">{{ menu_items|selectattr('is_active', 'eq', True)|list|length }}</div>
+            </div>
+            <div class="bg-white rounded-xl shadow-md p-6 card-hover border-l-4 border-red-500">
+                <h3 class="text-lg font-bold text-gray-700 mb-2">Low Stock Alert</h3>
+                <div class="text-3xl font-bold text-red-500">{{ menu_stock.values()|select('lt', 5)|list|length }}</div>
+            </div>
+        </div>
+
+        <!-- Menu Table -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
+            <div class="p-4 gradient-header text-white font-bold flex justify-between items-center">
+                <h3 class="text-lg">Menu Items</h3>
+                <div class="relative">
+                    <input type="text" id="searchInput" placeholder="Search menu items..." class="pl-8 pr-4 py-1 rounded-full text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-pily-orange">
+                    <span class="absolute left-3 top-1.5 text-gray-400">🔍</span>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full table-auto">
+                    <thead>
+                        <tr class="bg-pily-light border-b border-gray-200">
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-pily-gold uppercase tracking-wider">ID</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-pily-gold uppercase tracking-wider">Name</th>
+                            <th class="px-6 py-3 text-center text-xs font-semibold text-pily-gold uppercase tracking-wider">Price ($)</th>
+                            <th class="px-6 py-3 text-center text-xs font-semibold text-pily-gold uppercase tracking-wider">Stock</th>
+                            <th class="px-6 py-3 text-center text-xs font-semibold text-pily-gold uppercase tracking-wider">Branch</th>
+                            <th class="px-6 py-3 text-center text-xs font-semibold text-pily-gold uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for item in menu_items %}
+                        <tr class="hover:bg-pily-light transition duration-150">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ item.id }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="h-10 w-10 flex-shrink-0 mr-3 bg-pily-light rounded-full flex items-center justify-center">
+                                        🍲
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-900">{{ item.name }}</div>
+                                        <div class="text-xs text-gray-500">ID: {{ item.id }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-900">${{ item.price }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                {% if menu_stock[item.id] < 5 %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                        {{ menu_stock[item.id] }}
+                                    </span>
+                                {% else %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        {{ menu_stock[item.id] }}
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                                {% for branch in item.branches %}
+                                    <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                        {{ branch.id }}
+                                    </span>
+                                    {% if not loop.last %} {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                                <div class="flex justify-center space-x-2">
+                                    <a href="{{ url_for('admin.edit_menu_item', id=item.id) }}" 
+                                       class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-lg transition duration-300">
+                                        Edit
+                                    </a>
+                                    
+                                    <form action="{{ url_for('admin.delete_menu_item', id=item.id) }}" method="POST" class="inline-block">
+                                        <button type="submit" 
+                                                class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg transition duration-300"
+                                                onclick="return confirm('Are you sure you want to delete this menu item?');">
+                                            Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="px-6 py-3 flex items-center justify-between border-t border-gray-200">
+                <div class="text-sm text-gray-500">
+                    Mostrando <span class="font-medium">x</span> resultados / cambiar esto luego
+                </div>
+                <div class="flex-1 flex justify-end">
+                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                        <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <span class="sr-only">Previous</span>
+                            &laquo;
+                        </a>
+                        <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-pily-orange text-sm font-medium text-white hover:bg-pily-gold">
+                            1
+                        </a>
+                        <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <span class="sr-only">Next</span>
+                            &raquo;
+                        </a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-pily-orange text-white py-4 mt-auto">
+        <div class="container mx-auto px-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <p class="text-sm">© 2025 Gorditas Doña Pily</p>
+                    <p class="text-xs">La Paz, BCS</p>
+                </div>
+                <div>
+                    <a href="/" class="text-white hover:text-yellow-200 transition duration-300">Back to Home</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- Search functionality script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            
+            searchInput.addEventListener('keyup', function() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const tableRows = document.querySelectorAll('tbody tr');
+                
+                tableRows.forEach(row => {
+                    const name = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                    const id = row.querySelector('td:nth-child(1)').textContent.toLowerCase();
+                    
+                    // Check if the search term is in the name or ID
+                    if (name.includes(searchTerm) || id.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+                
+                // Update the results count
+                const visibleRows = document.querySelectorAll('tbody tr[style=""]').length;
+                const resultsCount = document.querySelector('.text-sm.text-gray-500');
+                if (resultsCount) {
+                    resultsCount.innerHTML = `Mostrando <span class="font-medium">${visibleRows}</span> resultados`;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

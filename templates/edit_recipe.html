@@ -3,99 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Recipe</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <title>Edit Recipe - Doña Pily</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'pily-gold': '#B8860B',
+                        'pily-orange': '#d68c00',
+                        'pily-light': '#FFF8E1',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .gradient-header {
+            background: linear-gradient(90deg, #d68c00 0%, #B8860B 100%);
+        }
+        .ingredient-group {
+            border-radius: 0.5rem;
+            border: 1px solid #E5E7EB;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background-color: #FAFAFA;
+        }
+    </style>
 </head>
-<body>
-    <div class="container">
-        <h1 class="mt-4">Edit Recipe</h1>
-
-        <form method="POST">
-            <!-- Dish Selection -->
-            <div class="form-group">
-                <label for="menu_item_id">Menu Item</label>
-                <select name="menu_item_id" id="menu_item_id" class="form-control">
-                    {% for item in menu_items %}
-                    <option value="{{ item.id }}" {% if item.id == menu_item.id %}selected{% endif %}>
-                        {{ item.name }}
-                    </option>
-                    {% endfor %}
-                </select>
+<body class="bg-pily-light min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="gradient-header text-white shadow-lg py-4 px-6">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Doña Pily Logo" class="w-12 h-12 mr-3" onerror="this.src='https://via.placeholder.com/48'; this.onerror=null;">
+                <div>
+                    <h1 class="text-2xl font-bold">Doña Pily</h1>
+                    <p class="text-sm">Sistema Administrativo</p>
+                </div>
             </div>
+            <div>
+                <a href="/" class="bg-white text-pily-orange px-4 py-2 rounded-full hover:bg-gray-100 transition duration-300">
+                    <i class="fas fa-home mr-2"></i>Panel Principal
+                </a>
+            </div>
+        </div>
+    </header>
 
-            <!-- Ingredients Section (Editable) -->
-            <div id="ingredientList">
-                <h3>Ingredients</h3>
+    <!-- Main Content -->
+    <main class="container mx-auto py-8 px-4 flex-grow">
+        <!-- Title Bar -->
+        <div class="mb-8">
+            <h2 class="text-3xl font-bold text-pily-orange">Edit Recipe</h2>
+            <p class="text-gray-600">Update ingredients and quantities for this recipe.</p>
+        </div>
 
-                {% for recipe_item in recipe_items %}
-                <div class="ingredient-group form-group">
-                    <label for="ingredient_id_{{ loop.index }}">Ingredient</label>
-                    <select class="form-control" name="ingredient_id[]" id="ingredient_id_{{ loop.index }}">
-                        {% for ingredient in raw_ingredients %}
-                        <option value="{{ ingredient.id }}" {% if ingredient.id == recipe_item.ingredient_id %}selected{% endif %}>
-                            {{ ingredient.name }} ({{ ingredient.total_quantity }} {{ ingredient.unit }})
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="mb-4 p-4 rounded-lg {% if category == 'success' %}bg-green-100 text-green-800{% elif category == 'danger' %}bg-red-100 text-red-800{% elif category == 'warning' %}bg-yellow-100 text-yellow-800{% else %}bg-blue-100 text-blue-800{% endif %}" role="alert">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Navigation Button -->
+        <a href="{{ url_for('admin.admin_recipes') }}" class="inline-block mb-6 bg-gray-500 hover:bg-gray-600 text-white px-5 py-2 rounded-lg shadow-md transition duration-300 flex items-center">
+            <span class="mr-2">←</span> Back to Recipes
+        </a>
+
+        <!-- Edit Recipe Form -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <form method="POST">
+                <!-- Dish Selection -->
+                <div class="mb-6">
+                    <label for="menu_item_id" class="block text-sm font-medium text-gray-700 mb-2">Menu Item</label>
+                    <select name="menu_item_id" id="menu_item_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pily-orange focus:outline-none" onchange="loadMenuItemRecipe(this.value)">
+                        {% for item in menu_items %}
+                        <option value="{{ item.id }}" {% if item.id == menu_item.id %}selected{% endif %}>
+                            {{ item.name }}
                         </option>
                         {% endfor %}
                     </select>
-
-                    <label for="quantity_used_{{ loop.index }}">Quantity Used (per dish)</label>
-                    <input type="number" step="0.01" class="form-control" name="quantity_used[]" id="quantity_used_{{ loop.index }}" value="{{ recipe_item.quantity_used }}" required>
-
-
-                    <label for="unit_{{ loop.index }}">Unit</label>
-                    <select class="form-control" name="unit[]" id="unit_{{ loop.index }}">
-                        <option value="kg" {% if recipe_item.unit == "kg" %}selected{% endif %}>kg</option>
-                        <option value="g" {% if recipe_item.unit == "g" %}selected{% endif %}>g</option>
-                        <option value="piece" {% if recipe_item.unit == "piece" %}selected{% endif %}>piece</option>
-                        <option value="L" {% if recipe_item.unit == "L" %}selected{% endif %}>L</option>
-                    </select>
-
-                    <button type="button" class="btn btn-danger btn-sm mt-2 remove-ingredient">❌ Remove</button>
                 </div>
-                {% endfor %}
+
+                <!-- Ingredients Section -->
+                <div id="ingredientList" class="mb-6">
+                    <h3 class="text-lg font-semibold text-pily-gold mb-4">Ingredients</h3>
+
+                    {% for recipe_item in recipe_items %}
+                    <div class="ingredient-group mb-4">
+                        <div class="mb-4">
+                            <label for="ingredient_id_{{ loop.index }}" class="block text-sm font-medium text-gray-700 mb-2">Ingredient</label>
+                            <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pily-orange focus:outline-none" name="ingredient_id[]" id="ingredient_id_{{ loop.index }}">
+                                {% for ingredient in raw_ingredients %}
+                                <option value="{{ ingredient.id }}" {% if ingredient.id == recipe_item.ingredient_id %}selected{% endif %}>
+                                    {{ ingredient.name }} ({{ ingredient.total_quantity }} {{ ingredient.unit }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="quantity_used_{{ loop.index }}" class="block text-sm font-medium text-gray-700 mb-2">Quantity Used (per dish)</label>
+                            <input type="number" step="0.01" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pily-orange focus:outline-none" name="quantity_used[]" id="quantity_used_{{ loop.index }}" value="{{ recipe_item.quantity_used }}" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="unit_{{ loop.index }}" class="block text-sm font-medium text-gray-700 mb-2">Unit</label>
+                            <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pily-orange focus:outline-none" name="unit[]" id="unit_{{ loop.index }}">
+                                <option value="kg" {% if recipe_item.unit == "kg" %}selected{% endif %}>kg</option>
+                                <option value="g" {% if recipe_item.unit == "g" %}selected{% endif %}>g</option>
+                                <option value="piece" {% if recipe_item.unit == "piece" %}selected{% endif %}>piece</option>
+                                <option value="L" {% if recipe_item.unit == "L" %}selected{% endif %}>L</option>
+                            </select>
+                        </div>
+
+                        <button type="button" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg transition duration-300 flex items-center remove-ingredient">
+                            <span class="mr-1">❌</span> Remove
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-wrap gap-3">
+                    <button type="button" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg shadow-md transition duration-300 flex items-center" onclick="addIngredient()">
+                        <span class="mr-2">➕</span> Add Another Ingredient
+                    </button>
+                    
+                    <button type="submit" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg shadow-md transition duration-300">
+                        Save Changes
+                    </button>
+                    
+                    <a href="{{ url_for('admin.admin_recipes') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg shadow-md transition duration-300">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-pily-orange text-white py-4 mt-auto">
+        <div class="container mx-auto px-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <p class="text-sm">© 2025 Gorditas Doña Pily</p>
+                    <p class="text-xs">La Paz, BCS</p>
+                </div>
+                <div>
+                    <a href="/" class="text-white hover:text-yellow-200 transition duration-300">Back to Home</a>
+                </div>
             </div>
+        </div>
+    </footer>
 
-            <!-- Add Ingredient Button -->
-            <button type="button" class="btn btn-success mt-3" onclick="addIngredient()">➕ Add Another Ingredient</button>
+    <!-- Store raw ingredients data for JavaScript use -->
+    <script>
+        // Store raw ingredients data as a JavaScript object for later use
+        const rawIngredients = [
+            {% for ingredient in raw_ingredients %}
+            {
+                id: {{ ingredient.id }},
+                name: "{{ ingredient.name }}",
+                totalQuantity: {{ ingredient.total_quantity }},
+                unit: "{{ ingredient.unit }}"
+            }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ];
+    </script>
 
-            <!-- Submit Button -->
-            <button type="submit" class="btn btn-primary mt-3">Save Changes</button>
-            <a href="{{ url_for('admin.admin_recipes') }}" class="btn btn-secondary mt-3">Cancel</a>
-        </form>
-    </div>
-
-    <!-- Bootstrap JS and dependencies -->
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
-
-    <!-- Script to Dynamically Add & Remove Ingredients -->
+    <!-- Script to Dynamically Add & Remove Ingredients & Update Recipe -->
     <script>
         function addIngredient() {
             let ingredientList = document.getElementById("ingredientList");
             let newIngredient = document.createElement("div");
-            newIngredient.classList.add("ingredient-group", "form-group");
+            newIngredient.classList.add("ingredient-group", "mb-4");
+
+            // Create ingredients options HTML
+            let optionsHtml = '';
+            for (let ingredient of rawIngredients) {
+                optionsHtml += `<option value="${ingredient.id}">${ingredient.name} (${ingredient.totalQuantity} ${ingredient.unit})</option>`;
+            }
 
             newIngredient.innerHTML = `
-                <label>Ingredient</label>
-                <select class="form-control" name="ingredient_id[]" required>
-                    {% for ingredient in raw_ingredients %}
-                    <option value="{{ ingredient.id }}">{{ ingredient.name }} ({{ ingredient.total_quantity }} {{ ingredient.unit }})</option>
-                    {% endfor %}
-                </select>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Ingredient</label>
+                    <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pily-orange focus:outline-none" name="ingredient_id[]" required>
+                        ${optionsHtml}
+                    </select>
+                </div>
 
-                <label>Quantity Used (per dish)</label>
-                <input type="number" step="0.01" class="form-control" name="quantity_used[]" required>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Quantity Used (per dish)</label>
+                    <input type="number" step="0.01" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pily-orange focus:outline-none" name="quantity_used[]" required>
+                </div>
 
-                <label>Unit</label>
-                <select class="form-control" name="unit[]" required>
-                    <option value="kg">kg</option>
-                    <option value="g">g</option>
-                    <option value="piece">piece</option>
-                    <option value="L">L</option>
-                </select>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Unit</label>
+                    <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pily-orange focus:outline-none" name="unit[]" required>
+                        <option value="kg">kg</option>
+                        <option value="g">g</option>
+                        <option value="piece">piece</option>
+                        <option value="L">L</option>
+                    </select>
+                </div>
 
-                <button type="button" class="btn btn-danger btn-sm mt-2 remove-ingredient">❌ Remove</button>
+                <button type="button" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg transition duration-300 flex items-center remove-ingredient">
+                    <span class="mr-1">❌</span> Remove
+                </button>
             `;
 
             ingredientList.appendChild(newIngredient);
@@ -106,10 +233,106 @@
             });
         }
 
+        // Function to load menu item recipe
+        function loadMenuItemRecipe(menuItemId) {
+            // Show loading state
+            const ingredientList = document.getElementById("ingredientList");
+            ingredientList.innerHTML = '<div class="text-center py-4"><span class="text-pily-orange">Loading ingredients...</span></div>';
+            
+            // Make an AJAX request to get recipe data
+            fetch(`/admin/get_recipe_data/${menuItemId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Clear the ingredient list
+                    ingredientList.innerHTML = '';
+                    
+                    // Add header
+                    const header = document.createElement('h3');
+                    header.className = 'text-lg font-semibold text-pily-gold mb-4';
+                    header.textContent = 'Ingredients';
+                    ingredientList.appendChild(header);
+                    
+                    if (data.recipe_items && data.recipe_items.length > 0) {
+                        // Add each ingredient
+                        data.recipe_items.forEach((item, index) => {
+                            let newIngredient = document.createElement("div");
+                            newIngredient.classList.add("ingredient-group", "mb-4");
+                            
+                            // Create ingredients options HTML
+                            let optionsHtml = '';
+                            for (let ingredient of rawIngredients) {
+                                // Select the matched ingredient
+                                let selected = ingredient.id === item.ingredient_id ? 'selected' : '';
+                                optionsHtml += `<option value="${ingredient.id}" ${selected}>${ingredient.name} (${ingredient.totalQuantity} ${ingredient.unit})</option>`;
+                            }
+                            
+                            newIngredient.innerHTML = `
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Ingredient</label>
+                                    <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pily-orange focus:outline-none" name="ingredient_id[]" required>
+                                        ${optionsHtml}
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Quantity Used (per dish)</label>
+                                    <input type="number" step="0.01" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pily-orange focus:outline-none" name="quantity_used[]" value="${item.quantity_used}" required>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Unit</label>
+                                    <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pily-orange focus:outline-none" name="unit[]">
+                                        <option value="kg" ${item.unit === 'kg' ? 'selected' : ''}>kg</option>
+                                        <option value="g" ${item.unit === 'g' ? 'selected' : ''}>g</option>
+                                        <option value="piece" ${item.unit === 'piece' ? 'selected' : ''}>piece</option>
+                                        <option value="L" ${item.unit === 'L' ? 'selected' : ''}>L</option>
+                                    </select>
+                                </div>
+                                
+                                <button type="button" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg transition duration-300 flex items-center remove-ingredient">
+                                    <span class="mr-1">❌</span> Remove
+                                </button>
+                            `;
+                            
+                            ingredientList.appendChild(newIngredient);
+                        });
+                    } else {
+                        // If no ingredients, show a message
+                        const noIngredients = document.createElement('div');
+                        noIngredients.className = 'p-4 bg-yellow-100 text-yellow-800 rounded-lg';
+                        noIngredients.innerHTML = 'No ingredients found for this recipe. Add ingredients below.';
+                        ingredientList.appendChild(noIngredients);
+                    }
+                    
+                    // Add event listeners to remove buttons
+                    document.querySelectorAll(".remove-ingredient").forEach(button => {
+                        button.addEventListener("click", function() {
+                            this.parentNode.remove();
+                        });
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching recipe data:', error);
+                    ingredientList.innerHTML = `
+                        <div class="p-4 bg-red-100 text-red-800 rounded-lg">
+                            Error loading recipe data. Please try again.
+                        </div>
+                        <h3 class="text-lg font-semibold text-pily-gold mb-4 mt-4">Ingredients</h3>
+                    `;
+                });
+        }
+
         // Ensure remove buttons work on initial ingredient fields
-        document.querySelectorAll(".remove-ingredient").forEach(button => {
-            button.addEventListener("click", function() {
-                this.parentNode.remove();
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll(".remove-ingredient").forEach(button => {
+                button.addEventListener("click", function() {
+                    this.parentNode.remove();
+                });
             });
         });
     </script>

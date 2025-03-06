@@ -8,52 +8,91 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f8f8f8;
+            background-color: #f5f5f5;
             text-align: center;
+            padding: 20px;
+            margin: 0;
         }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
         h1 {
-            color: #d48806;
+            color: #D68C00;
+            margin-bottom: 30px;
         }
+        
         .orders-container {
             display: flex;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 20px;
             justify-content: center;
+            max-width: 1200px;
+            margin: 0 auto;
         }
+        
         .order-card {
             background: white;
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             width: 300px;
             text-align: left;
-            position: relative;
+            border: 1px solid #e0e0e0;
+            animation: fadeIn 0.3s ease-in-out;
         }
+        
         .order-header {
             font-size: 1.2em;
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+            color: #D68C00;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f0f0f0;
         }
+        
         .order-items {
-            background: #fff7e6;
-            padding: 10px;
-            border-radius: 5px;
+            background: #FFF7E6;
+            padding: 15px;
+            border-radius: 6px;
             margin-bottom: 15px;
         }
+        
+        .order-items p {
+            margin: 8px 0;
+        }
+        
+        .order-items strong {
+            color: #D68C00;
+            margin-right: 5px;
+        }
+        
         .order-actions {
             display: flex;
             justify-content: space-between;
+            gap: 10px;
         }
+        
         .btn {
-            padding: 10px;
+            padding: 10px 15px;
             border: none;
             cursor: pointer;
             border-radius: 5px;
             font-weight: bold;
+            flex: 1;
         }
-        .btn-complete { background: #28a745; color: white; }
-        .btn-cancel { background: #dc3545; color: white; } 
-        .btn-view { background: #ffc107; color: black; }
+        
+        .btn-complete { 
+            background: #28a745; 
+            color: white; 
+        }
+        
+        .btn-cancel { 
+            background: #dc3545; 
+            color: white; 
+        }
     </style>
 </head>
 <body>
@@ -65,48 +104,133 @@
 
         function renderOrders(orders) {
             let container = document.getElementById("orders-container");
-            container.innerHTML = ""; // Clear current orders
+            
+            // Check if any current orders are no longer in the new data
+            const currentOrderCards = document.querySelectorAll('.order-card');
+            const newOrderIds = orders.map(order => order.id);
+            
+            currentOrderCards.forEach(card => {
+                const completeBtn = card.querySelector('.btn-complete');
+                if (completeBtn) {
+                    // Extract the order ID from the onclick attribute
+                    const onclickAttr = completeBtn.getAttribute('onclick');
+                    const orderIdMatch = onclickAttr.match(/completeOrder\((\d+)\)/);
+                    
+                    if (orderIdMatch && orderIdMatch[1]) {
+                        const orderId = parseInt(orderIdMatch[1]);
+                        if (!newOrderIds.includes(orderId)) {
+                            // This order is no longer in the data, remove it
+                            card.style.transition = "opacity 0.3s ease";
+                            card.style.opacity = "0";
+                            setTimeout(() => card.remove(), 300);
+                        }
+                    }
+                }
+            });
+            
+            // Add new orders or update existing ones
             orders.forEach(order => {
-                let orderCard = document.createElement("div");
-                orderCard.classList.add("order-card");
-                orderCard.innerHTML = `
-                    <div class="order-header">Table ${order.table}</div>
-                    <div class="order-items">
-                        ${order.items.map(item => `<p><strong>${item.quantity}x</strong> ${item.name}</p>`).join("")}
-                    </div>
-                    <div class="order-actions">
-                        <button class="btn btn-complete" onclick="completeOrder(${order.id})">✔ Complete</button>
-                        <button class="btn btn-cancel" onclick="cancelOrder(${order.id})">✖ Cancel</button>
-                    </div>
-                `;
-                container.appendChild(orderCard);
+                const existingCard = document.querySelector(`.btn-complete[onclick*="completeOrder(${order.id})"]`)?.closest('.order-card');
+                
+                if (existingCard) {
+                    // Update existing card
+                    existingCard.innerHTML = `
+                        <div class="order-header">Table ${order.table}</div>
+                        <div class="order-items">
+                            ${order.items.map(item => `<p><strong>${item.quantity}x</strong> ${item.name}</p>`).join("")}
+                        </div>
+                        <div class="order-actions">
+                            <button class="btn btn-complete" onclick="completeOrder(${order.id})">✔ Complete</button>
+                            <button class="btn btn-cancel" onclick="cancelOrder(${order.id})">✖ Cancel</button>
+                        </div>
+                    `;
+                } else {
+                    // Create new card
+                    let orderCard = document.createElement("div");
+                    orderCard.classList.add("order-card");
+                    orderCard.setAttribute('data-order-id', order.id);
+                    orderCard.innerHTML = `
+                        <div class="order-header">Table ${order.table}</div>
+                        <div class="order-items">
+                            ${order.items.map(item => `<p><strong>${item.quantity}x</strong> ${item.name}</p>`).join("")}
+                        </div>
+                        <div class="order-actions">
+                            <button class="btn btn-complete" onclick="completeOrder(${order.id})">✔ Complete</button>
+                            <button class="btn btn-cancel" onclick="cancelOrder(${order.id})">✖ Cancel</button>
+                        </div>
+                    `;
+                    container.appendChild(orderCard);
+                }
             });
         }
 
         function completeOrder(orderId) {
+            // Immediately remove the card from the UI
+            removeOrderCard(orderId);
+            
             fetch(`/api/order/complete/${orderId}`, { method: "POST" })
                 .then(res => res.json())
                 .then(() => {
                     socket.emit("order_update", { action: "completed", orderId });
+                })
+                .catch(err => {
+                    console.error("Error completing order:", err);
+                    // If there was an error, refresh to get the correct state
+                    fetchAndRenderOrders();
                 });
         }
 
         function cancelOrder(orderId) {
+            // Immediately remove the card from the UI
+            removeOrderCard(orderId);
+            
             fetch(`/api/order/cancel/${orderId}`, { method: "POST" })
                 .then(res => res.json())
                 .then(() => {
                     socket.emit("order_update", { action: "canceled", orderId });
+                })
+                .catch(err => {
+                    console.error("Error canceling order:", err);
+                    // If there was an error, refresh to get the correct state
+                    fetchAndRenderOrders();
                 });
+        }
+        
+        function removeOrderCard(orderId) {
+            // Find the card with the matching order ID
+            const orderCards = document.querySelectorAll('.order-card');
+            orderCards.forEach(card => {
+                // Look for buttons with the order ID in their onclick attribute
+                const completeBtn = card.querySelector(`.btn-complete[onclick*="${orderId}"]`);
+                const cancelBtn = card.querySelector(`.btn-cancel[onclick*="${orderId}"]`);
+                
+                if (completeBtn || cancelBtn) {
+                    // Add a fade-out effect
+                    card.style.transition = "opacity 0.3s ease";
+                    card.style.opacity = "0";
+                    
+                    // Remove the card after the animation
+                    setTimeout(() => {
+                        card.remove();
+                    }, 300);
+                }
+            });
         }
 
         function fetchAndRenderOrders() {
             fetch("/api/kitchen/orders")
                 .then(res => res.json())
-                .then(orders => renderOrders(orders));
+                .then(orders => renderOrders(orders))
+                .catch(err => console.error("Error fetching orders:", err));
         }
 
-        socket.on("order_update", () => {
-            fetchAndRenderOrders();
+        socket.on("order_update", (data) => {
+            // Only fetch all orders if this is a new order or 
+            // if we don't have specific information about the update
+            if (!data || !data.action || data.action === "new_order") {
+                fetchAndRenderOrders();
+            }
+            // For completed or canceled orders, we've already removed them from the UI
         });
 
         window.onload = () => {

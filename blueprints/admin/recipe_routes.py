@@ -1,5 +1,5 @@
 # blueprints/admin/menu_routes.py
-from flask import render_template, request, redirect, url_for, flash
+from flask import render_template, request, redirect, url_for, flash, jsonify
 from models import db
 from models.menu import MenuItem
 from models.menu import Recipe  # Add this missing import
@@ -125,3 +125,21 @@ def delete_recipe(id):
         flash(f"Error deleting recipe: {str(e)}", "danger")
         
     return redirect(url_for("admin_recipes"))
+
+@admin_bp.route('/get_recipe_data/<int:menu_item_id>', methods=['GET'])
+def get_recipe_data(menu_item_id):
+    # Get recipe items for this menu item
+    recipe_items = Recipe.query.filter_by(menu_item_id=menu_item_id).all()
+    
+    # Format the data for JSON response
+    recipe_data = {
+        'recipe_items': [
+            {
+                'ingredient_id': item.ingredient_id,
+                'quantity_used': item.quantity_used,
+                'unit': item.unit
+            } for item in recipe_items
+        ]
+    }
+    
+    return jsonify(recipe_data)

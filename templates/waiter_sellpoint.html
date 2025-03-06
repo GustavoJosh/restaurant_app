@@ -3,52 +3,255 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Waiter POS</title>
+    <title>Doña Pity - Waiter POS</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#D68A00',
+                        secondary: '#B27300',
+                        light: '#FFF1D6',
+                        dark: '#8B5A00'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        .table-button.active {
+            background-color: #B27300;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .item-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .item-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .quantity-control {
+            transition: all 0.2s ease;
+        }
+        .quantity-control:hover {
+            transform: scale(1.1);
+        }
+    </style>
 </head>
-<body class="bg-gray-100 flex flex-col md:flex-row">
-    <!-- Sidebar mimicking index -->
-    <aside class="w-full md:w-1/6 bg-yellow-600 text-white h-auto md:h-screen flex flex-col p-6">
-        <h2 class="text-lg font-bold mb-4">Table Selected: <span id="selected-table">1</span></h2>
-        <nav class="flex flex-col space-y-4">
-            <button class="py-3 px-4 bg-yellow-500 rounded-lg" onclick="updateTable(1)">Table 1</button>
-            <button class="py-3 px-4 bg-yellow-500 rounded-lg" onclick="updateTable(2)">Table 2</button>
-            <button class="py-3 px-4 bg-yellow-500 rounded-lg" onclick="updateTable(3)">Table 3</button>
-            <button class="py-3 px-4 bg-yellow-500 rounded-lg" onclick="updateTable(4)">Table 4</button>
-            <button class="py-3 px-4 bg-yellow-500 rounded-lg" onclick="updateTable(5)">Table 5</button>
-        </nav>
+<body class="bg-gray-100 flex flex-col md:flex-row h-screen overflow-hidden">
+    <!-- Left Sidebar - Tables -->
+    <aside class="w-full md:w-1/6 bg-primary text-white h-auto md:h-screen flex flex-col p-4 md:p-6 overflow-auto">
+        <div class="flex items-center justify-center mb-6">
+            <img src="{{ url_for('static', filename='images/logo.png') }}"  alt="Doña Pity Logo" class="w-12 h-12 mr-2">
+            <h1 class="text-xl font-bold">Doña Pity</h1>
+        </div>
+        
+        <h2 class="text-lg font-semibold mb-4 text-light">
+            <i class="fas fa-utensils mr-2"></i>Mesa Seleccionada: 
+            <span id="selected-table" class="font-bold">1</span>
+        </h2>
+        
+        <div class="grid grid-cols-2 gap-2 mb-6">
+            <button class="table-button active py-3 text-center bg-secondary rounded-lg text-white font-medium shadow transition-all hover:bg-opacity-90" onclick="updateTable(1)">
+                <i class="fas fa-chair mb-1"></i>
+                <div>Mesa 1</div>
+            </button>
+            <button class="table-button py-3 text-center bg-primary rounded-lg text-white font-medium shadow transition-all hover:bg-opacity-90" onclick="updateTable(2)">
+                <i class="fas fa-chair mb-1"></i>
+                <div>Mesa 2</div>
+            </button>
+            <button class="table-button py-3 text-center bg-primary rounded-lg text-white font-medium shadow transition-all hover:bg-opacity-90" onclick="updateTable(3)">
+                <i class="fas fa-chair mb-1"></i>
+                <div>Mesa 3</div>
+            </button>
+            <button class="table-button py-3 text-center bg-primary rounded-lg text-white font-medium shadow transition-all hover:bg-opacity-90" onclick="updateTable(4)">
+                <i class="fas fa-chair mb-1"></i>
+                <div>Mesa 4</div>
+            </button>
+            <button class="table-button py-3 text-center bg-primary rounded-lg text-white font-medium shadow transition-all hover:bg-opacity-90" onclick="updateTable(5)">
+                <i class="fas fa-chair mb-1"></i>
+                <div>Mesa 5</div>
+            </button>
+            <button class="table-button py-3 text-center bg-primary rounded-lg text-white font-medium shadow transition-all hover:bg-opacity-90" onclick="updateTable(6)">
+                <i class="fas fa-chair mb-1"></i>
+                <div>Mesa 6</div>
+            </button>
+        </div>
+        
+        <div class="mt-auto">
+            <button class="w-full py-3 bg-dark text-white rounded-lg flex items-center justify-center transition-all hover:bg-opacity-90 mb-2">
+                <i class="fas fa-home mr-2"></i> Inicio
+            </button>
+            <button class="w-full py-3 bg-dark text-white rounded-lg flex items-center justify-center transition-all hover:bg-opacity-90">
+                <i class="fas fa-sign-out-alt mr-2"></i> Cerrar Sesión
+            </button>
+        </div>
     </aside>
 
-    <!-- Main Content -->
-    <main class="flex-1 p-6">
-        <h1 class="text-3xl font-bold text-center text-yellow-600 mb-6">Point of Sale</h1>
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {% for item in menu_items %}
-            <div class="bg-white shadow-md rounded-lg p-4 text-center">
-                <img src="{{ url_for('static', filename='images/default.jpg') }}" 
+    <!-- Main Content - Menu Items -->
+    <main class="flex-1 p-4 overflow-y-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl md:text-3xl font-bold text-primary">
+                <i class="fas fa-cash-register mr-2"></i>Point of Sale
+            </h1>
+            <div class="flex space-x-2">
+                <div class="bg-white rounded-lg shadow p-2 flex items-center">
+                    <i class="fas fa-search text-gray-400 mr-2"></i>
+                    <input type="text" placeholder="Buscar platillo..." class="outline-none text-sm">
+                </div>
+                <button class="bg-primary text-white p-2 rounded-lg" aria-label="Filtrar platillos">
+                    <i class="fas fa-filter"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Category Tabs -->
+        <div class="flex overflow-x-auto mb-4 pb-2 no-scrollbar">
+            <button class="whitespace-nowrap px-4 py-2 bg-secondary text-white rounded-full mr-2 text-sm font-medium">Todos</button>
+            <button class="whitespace-nowrap px-4 py-2 bg-white text-gray-700 rounded-full mr-2 text-sm font-medium">Gorditas</button>
+            <button class="whitespace-nowrap px-4 py-2 bg-white text-gray-700 rounded-full mr-2 text-sm font-medium">Bebidas</button>
+            <button class="whitespace-nowrap px-4 py-2 bg-white text-gray-700 rounded-full mr-2 text-sm font-medium">Postres</button>
+            <button class="whitespace-nowrap px-4 py-2 bg-white text-gray-700 rounded-full mr-2 text-sm font-medium">Especialidades</button>
+        </div>
+        
+        <!-- Menu Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <!-- Sample Menu Items -->
+            <div class="item-card bg-white shadow rounded-xl overflow-hidden">
+                <div class="relative">
+                    <img src="{{ url_for('static', filename='images/default.jpg') }}" 
                      alt="Product Image" class="w-full h-32 object-cover rounded mb-2">
-                <h2 class="text-xl font-bold">{{ item.name }}</h2>
-                <p class="text-gray-700">${{ item.price }}</p>
-                <div class="mt-2 flex justify-center items-center">
-                    <button class="bg-red-500 text-white px-3 py-1 rounded decrease-qty" data-id="{{ item.id }}">-</button>
-                    <span class="px-4 item-qty" id="qty-{{ item.id }}">0</span>
-                    <button class="bg-blue-500 text-white px-3 py-1 rounded increase-qty" data-id="{{ item.id }}">+</button>
+                    <span class="absolute top-2 right-2 bg-primary text-white text-sm px-2 py-1 rounded-full">$45.0</span>
+                </div>
+                <div class="p-4">
+                    <h2 class="text-lg font-bold text-gray-800">Gordita ChicharronSalsaVerde</h2>
+                    <div class="mt-3 flex items-center justify-between">
+                        <div class="flex items-center">
+                            <button class="quantity-control w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center decrease-qty" data-id="1" aria-label="Disminuir cantidad">
+                                <i class="fas fa-minus" aria-hidden="true"></i>
+                            </button>
+                            <span class="px-4 item-qty font-medium" id="qty-1">0</span>
+                            <button class="quantity-control w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center increase-qty" data-id="1" aria-label="Aumentar cantidad">
+                                <i class="fas fa-plus" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <button class="add-to-cart bg-primary text-white px-2 py-1 rounded-lg text-sm">
+                            <i class="fas fa-cart-plus mr-1"></i>Agregar
+                        </button>
+                    </div>
                 </div>
             </div>
-            {% endfor %}
+            
+            <div class="item-card bg-white shadow rounded-xl overflow-hidden">
+                <div class="relative">
+                    <img src="{{ url_for('static', filename='images/default.jpg') }}" 
+                    alt="Product Image" class="w-full h-32 object-cover rounded mb-2">
+                    <span class="absolute top-2 right-2 bg-primary text-white text-sm px-2 py-1 rounded-full">$45.0</span>
+                </div>
+                <div class="p-4">
+                    <h2 class="text-lg font-bold text-gray-800">Gordita ChorizoConPapa</h2>
+                    <div class="mt-3 flex items-center justify-between">
+                        <div class="flex items-center">
+                            <button class="quantity-control w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center decrease-qty" data-id="2" aria-label="Disminuir cantidad">
+                                <i class="fas fa-minus" aria-hidden="true"></i>
+                            </button>
+                            <span class="px-4 item-qty font-medium" id="qty-2">0</span>
+                            <button class="quantity-control w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center increase-qty" data-id="2" aria-label="Aumentar cantidad">
+                                <i class="fas fa-plus" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <button class="add-to-cart bg-primary text-white px-2 py-1 rounded-lg text-sm">
+                            <i class="fas fa-cart-plus mr-1"></i>Agregar
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Add more menu items as needed -->
         </div>
     </main>
 
-    <!-- Right Sidebar for Cart -->
-    <aside class="w-full md:w-1/5 bg-gray-200 h-auto md:h-screen p-4 flex flex-col">
-        <h2 class="text-xl font-bold">🛒 Your Order</h2>
-        <ul id="cart-items" class="flex-1 overflow-auto"></ul>
-        <div class="total-price mt-4">
-            <p class="font-bold">Total: <span id="total-cost">$0.00</span></p>
+    <!-- Right Sidebar - Cart -->
+    <aside class="w-full md:w-1/4 bg-white h-auto md:h-screen shadow-lg flex flex-col p-4 overflow-auto">
+        <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-shopping-cart mr-2 text-primary"></i> Tu Orden
+        </h2>
+        
+        <div class="bg-gray-100 p-3 rounded-lg mb-4 flex justify-between items-center">
+            <div>
+                <span class="text-sm text-gray-500">Mesa:</span>
+                <span class="font-medium ml-1" id="cart-table">1</span>
+            </div>
+            <div>
+                <span class="text-sm text-gray-500">Hora:</span>
+                <span class="font-medium ml-1" id="current-time">14:30</span>
+            </div>
+            <div>
+                <span class="text-sm text-gray-500">Atendió:</span>
+                <span class="font-medium ml-1">Juan</span>
+            </div>
         </div>
-        <div class="flex justify-between mt-4">
-            <button id="cancel-cart" class="bg-red-500 text-white px-4 py-2 rounded">❌ Cancel</button>
-            <button id="submit-cart" class="bg-green-500 text-white px-4 py-2 rounded hidden">✅ Accept</button>
+        
+        <div class="flex-1 overflow-auto">
+            <ul id="cart-items" class="space-y-3">
+                <!-- Cart items will be added here -->
+                <li class="hidden cart-item-template bg-gray-50 p-3 rounded-lg flex justify-between items-center">
+                    <div>
+                        <h3 class="font-medium item-name">Gordita ChicharronSalsaVerde</h3>
+                        <div class="flex items-center mt-1">
+                            <button class="cart-qty-decrease text-xs bg-gray-200 rounded-full w-5 h-5 flex items-center justify-center" aria-label="Disminuir cantidad en carrito">
+                                <i class="fas fa-minus" aria-hidden="true"></i>
+                            </button>
+                            <span class="mx-2 text-sm cart-qty">2</span>
+                            <button class="cart-qty-increase text-xs bg-gray-200 rounded-full w-5 h-5 flex items-center justify-center" aria-label="Aumentar cantidad en carrito">
+                                <i class="fas fa-plus" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-medium item-total">$90.00</div>
+                        <button class="text-red-500 text-sm mt-1 remove-item" aria-label="Eliminar ítem">
+                            <i class="fas fa-trash-alt" aria-hidden="true"></i> Eliminar
+                        </button>
+                    </div>
+                </li>
+            </ul>
+            
+            <div id="empty-cart" class="text-center py-8 text-gray-400">
+                <i class="fas fa-shopping-cart text-4xl mb-2"></i>
+                <p>Tu carrito está vacío</p>
+                <p class="text-sm">Agrega elementos desde el menú</p>
+            </div>
+        </div>
+        
+        <div class="border-t pt-4 mt-4">
+            <div class="flex justify-between mb-2">
+                <span class="text-gray-600">Subtotal:</span>
+                <span id="subtotal" class="font-medium">$0.00</span>
+            </div>
+            <div class="flex justify-between mb-4">
+                <span class="text-gray-600">IVA (16%):</span>
+                <span id="tax" class="font-medium">$0.00</span>
+            </div>
+            <div class="flex justify-between text-lg font-bold">
+                <span>Total:</span>
+                <span id="total-cost">$0.00</span>
+            </div>
+        </div>
+        
+        <div class="flex mt-4 space-x-2">
+            <button id="cancel-cart" class="flex-1 bg-red-500 text-white px-4 py-3 rounded-lg flex items-center justify-center transition-all hover:bg-red-600">
+                <i class="fas fa-times mr-2"></i> Cancelar
+            </button>
+            <button id="submit-cart" class="flex-1 bg-green-500 text-white px-4 py-3 rounded-lg flex items-center justify-center transition-all hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                <i class="fas fa-check mr-2"></i> Enviar Orden
+            </button>
         </div>
     </aside>
 
@@ -56,17 +259,39 @@
         let cart = {};
         let selectedTable = 1;
 
+        // Update the current time every minute
+        function updateCurrentTime() {
+            const now = new Date();
+            const timeString = now.getHours().toString().padStart(2, '0') + ':' + 
+                               now.getMinutes().toString().padStart(2, '0');
+            document.getElementById('current-time').textContent = timeString;
+        }
+        
+        updateCurrentTime();
+        setInterval(updateCurrentTime, 60000);
+
         function updateTable(tableNumber) {
             selectedTable = tableNumber;
             document.getElementById("selected-table").textContent = tableNumber;
+            document.getElementById("cart-table").textContent = tableNumber;
+            
+            // Update active class on table buttons
+            document.querySelectorAll(".table-button").forEach((btn, index) => {
+                if (index + 1 === tableNumber) {
+                    btn.classList.add("active");
+                } else {
+                    btn.classList.remove("active");
+                }
+            });
         }
         
         document.querySelectorAll(".increase-qty").forEach(button => {
             button.addEventListener("click", () => {
                 let itemId = button.getAttribute("data-id");
                 let quantityElement = document.getElementById(`qty-${itemId}`);
-                let itemName = button.parentNode.previousElementSibling.previousElementSibling.textContent;
-                let itemPrice = parseFloat(button.parentNode.previousElementSibling.textContent.replace("$", ""));
+                let itemCard = button.closest('.item-card');
+                let itemName = itemCard.querySelector('h2').textContent;
+                let itemPrice = parseFloat(itemCard.querySelector('.absolute').textContent.replace('$', ''));
                 
                 if (!cart[itemId]) {
                     cart[itemId] = { name: itemName, price: itemPrice, quantity: 0 };
@@ -91,42 +316,172 @@
             });
         });
         
+        document.querySelectorAll(".add-to-cart").forEach(button => {
+            button.addEventListener("click", () => {
+                let itemCard = button.closest('.item-card');
+                let itemId = itemCard.querySelector('.increase-qty').getAttribute('data-id');
+                let itemName = itemCard.querySelector('h2').textContent;
+                let itemPrice = parseFloat(itemCard.querySelector('.absolute').textContent.replace('$', ''));
+                
+                if (!cart[itemId]) {
+                    cart[itemId] = { name: itemName, price: itemPrice, quantity: 0 };
+                }
+                cart[itemId].quantity++;
+                document.getElementById(`qty-${itemId}`).textContent = cart[itemId].quantity;
+                
+                // Show a little animation to indicate item was added
+                const notification = document.createElement('div');
+                notification.classList.add('fixed', 'bottom-4', 'right-4', 'bg-green-500', 'text-white', 'p-3', 'rounded-lg', 'shadow-lg', 'z-50');
+                notification.innerHTML = `<i class="fas fa-check mr-2"></i> ${itemName} agregado`;
+                document.body.appendChild(notification);
+                setTimeout(() => notification.remove(), 2000);
+                
+                updateCart();
+            });
+        });
+        
         function updateCart() {
             let cartList = document.getElementById("cart-items");
-            cartList.innerHTML = "";
-            let totalCost = 0;
+            let emptyCart = document.getElementById("empty-cart");
+            let submitButton = document.getElementById("submit-cart");
+            
+            // Clear current items but keep the template
+            const template = document.querySelector('.cart-item-template');
+            cartList.innerHTML = '';
+            cartList.appendChild(template);
+            
+            let subtotal = 0;
+            let itemCount = 0;
             
             Object.keys(cart).forEach(itemId => {
                 let item = cart[itemId];
-                let li = document.createElement("li");
-                li.textContent = `${item.quantity}x ${item.name} - $${(item.price * item.quantity).toFixed(2)}`;
-                cartList.appendChild(li);
-                totalCost += item.price * item.quantity;
+                if (item.quantity > 0) {
+                    itemCount++;
+                    let itemTotal = item.price * item.quantity;
+                    subtotal += itemTotal;
+                    
+                    let li = template.cloneNode(true);
+                    li.classList.remove('hidden', 'cart-item-template');
+                    li.setAttribute('data-id', itemId);
+                    
+                    li.querySelector('.item-name').textContent = item.name;
+                    li.querySelector('.cart-qty').textContent = item.quantity;
+                    li.querySelector('.item-total').textContent = `$${itemTotal.toFixed(2)}`;
+                    
+                    li.querySelector('.cart-qty-increase').addEventListener('click', () => {
+                        cart[itemId].quantity++;
+                        updateCart();
+                    });
+                    
+                    li.querySelector('.cart-qty-decrease').addEventListener('click', () => {
+                        if (cart[itemId].quantity > 1) {
+                            cart[itemId].quantity--;
+                        } else {
+                            delete cart[itemId];
+                        }
+                        updateCart();
+                        document.getElementById(`qty-${itemId}`).textContent = cart[itemId] ? cart[itemId].quantity : 0;
+                    });
+                    
+                    li.querySelector('.remove-item').addEventListener('click', () => {
+                        delete cart[itemId];
+                        updateCart();
+                        document.getElementById(`qty-${itemId}`).textContent = 0;
+                    });
+                    
+                    cartList.appendChild(li);
+                }
             });
             
-            document.getElementById("total-cost").textContent = `$${totalCost.toFixed(2)}`;
-            document.getElementById("submit-cart").classList.toggle("hidden", totalCost === 0);
+            // Update totals
+            const tax = subtotal * 0.16;
+            const total = subtotal + tax;
+            
+            document.getElementById('subtotal').textContent = `$${subtotal.toFixed(2)}`;
+            document.getElementById('tax').textContent = `$${tax.toFixed(2)}`;
+            document.getElementById('total-cost').textContent = `$${total.toFixed(2)}`;
+            
+            // Toggle empty cart message
+            emptyCart.style.display = itemCount > 0 ? 'none' : 'block';
+            
+            // Enable/disable submit button
+            submitButton.disabled = itemCount === 0;
+            
+            // Update quantity indicators in the menu
+            Object.keys(cart).forEach(itemId => {
+                const qtyElement = document.getElementById(`qty-${itemId}`);
+                if (qtyElement) {
+                    qtyElement.textContent = cart[itemId].quantity;
+                }
+            });
         }
 
-                document.getElementById("submit-cart").addEventListener("click", () => {
+        document.getElementById("submit-cart").addEventListener("click", () => {
+            if (Object.keys(cart).length === 0) return;
+            
             fetch("/api/order", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     table_number: selectedTable,
-                    branch_id: 1,  // 🔥 Ensure this is added
+                    branch_id: 1,
                     items: Object.keys(cart).map(id => ({ menu_item_id: id, quantity: cart[id].quantity }))
                 })
             })
             .then(response => response.json())
             .then(data => {
-                alert(data.message || "Order submitted!");
+                // Show success message
+                const notification = document.createElement('div');
+                notification.classList.add('fixed', 'top-4', 'right-4', 'bg-green-500', 'text-white', 'p-4', 'rounded-lg', 'shadow-lg', 'z-50', 'flex', 'items-center');
+                notification.innerHTML = `
+                    <i class="fas fa-check-circle text-2xl mr-3"></i>
+                    <div>
+                        <div class="font-bold">¡Orden Enviada!</div>
+                        <div class="text-sm">La cocina ha recibido tu orden</div>
+                    </div>
+                `;
+                document.body.appendChild(notification);
+                setTimeout(() => notification.remove(), 3000);
+                
+                // Reset the cart
                 cart = {};
+                document.querySelectorAll(".item-qty").forEach(qty => {
+                    qty.textContent = "0";
+                });
                 updateCart();
             })
-            .catch(error => console.error("Error:", error));
+            .catch(error => {
+                console.error("Error:", error);
+                
+                // Show error message
+                const notification = document.createElement('div');
+                notification.classList.add('fixed', 'top-4', 'right-4', 'bg-red-500', 'text-white', 'p-4', 'rounded-lg', 'shadow-lg', 'z-50', 'flex', 'items-center');
+                notification.innerHTML = `
+                    <i class="fas fa-exclamation-circle text-2xl mr-3"></i>
+                    <div>
+                        <div class="font-bold">Error</div>
+                        <div class="text-sm">No se pudo enviar la orden. Intenta de nuevo.</div>
+                    </div>
+                `;
+                document.body.appendChild(notification);
+                setTimeout(() => notification.remove(), 3000);
+            });
         });
-
+        
+        document.getElementById("cancel-cart").addEventListener("click", () => {
+            if (Object.keys(cart).length === 0) return;
+            
+            if (confirm("¿Estás seguro de que deseas cancelar esta orden?")) {
+                cart = {};
+                document.querySelectorAll(".item-qty").forEach(qty => {
+                    qty.textContent = "0";
+                });
+                updateCart();
+            }
+        });
+        
+        // Initialize the cart display
+        updateCart();
     </script>
 </body>
 </html>
