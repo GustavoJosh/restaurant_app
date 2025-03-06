@@ -508,7 +508,7 @@ def dashboard_summary():
         top_product = top_product_result[0] if top_product_result else "No data"
         
         # Get inventory alerts (ingredients with low stock)
-        low_stock_threshold = 5  # Items with less than 10 units
+        low_stock_threshold = 11  # Items with less than 10 units
         low_stock_items = Ingredient.query.filter(
             Ingredient.total_quantity < low_stock_threshold,
             Ingredient.is_active == True

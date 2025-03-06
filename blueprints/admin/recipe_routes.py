@@ -11,7 +11,7 @@ from blueprints.admin import admin_bp
 @admin_bp.route("/recipes")
 def admin_recipes():
     recipes = Recipe.query.all()
-    return render_template("admin.admin_recipes.html", recipes=recipes)
+    return render_template("admin_recipes.html", recipes=recipes)
 
 @admin_bp.route("/recipes/add", methods=["GET", "POST"])
 def add_recipe():
@@ -55,7 +55,7 @@ def add_recipe():
 
     menu_items = MenuItem.query.all()
     ingredients = db.session.query(Ingredient).filter_by(is_active=True).all()
-    return render_template("admin.add_recipe.html", menu_items=menu_items, raw_ingredients=ingredients)
+    return render_template("add_recipe.html", menu_items=menu_items, raw_ingredients=ingredients)
 
 @admin_bp.route("/recipes/edit/<int:id>", methods=["GET", "POST"])
 def edit_recipe(id):
@@ -124,4 +124,4 @@ def delete_recipe(id):
         db.session.rollback()
         flash(f"Error deleting recipe: {str(e)}", "danger")
         
-    return redirect(url_for("admin.admin_recipes"))
+    return redirect(url_for("admin_recipes"))

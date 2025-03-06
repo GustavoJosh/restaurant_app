@@ -48,7 +48,7 @@
     <!-- Left Sidebar - Tables -->
     <aside class="w-full md:w-1/6 bg-primary text-white h-auto md:h-screen flex flex-col p-4 md:p-6 overflow-auto">
         <div class="flex items-center justify-center mb-6">
-            <img src="https://cdn.jsdelivr.net/gh/identicons/jazzicon@1.0.0/dist/jazzicon.min.js" alt="Doña Pity Logo" class="w-12 h-12 mr-2">
+            <img src="{{ url_for('static', filename='images/logo.png') }}"  alt="Doña Pity Logo" class="w-12 h-12 mr-2">
             <h1 class="text-xl font-bold">Doña Pity</h1>
         </div>
         
@@ -125,7 +125,8 @@
             <!-- Sample Menu Items -->
             <div class="item-card bg-white shadow rounded-xl overflow-hidden">
                 <div class="relative">
-                    <img src="https://source.unsplash.com/random/300x200/?mexican-food" alt="Gordita ChicharronSalsaVerde" class="w-full h-40 object-cover">
+                    <img src="{{ url_for('static', filename='images/default.jpg') }}" 
+                     alt="Product Image" class="w-full h-32 object-cover rounded mb-2">
                     <span class="absolute top-2 right-2 bg-primary text-white text-sm px-2 py-1 rounded-full">$45.0</span>
                 </div>
                 <div class="p-4">
@@ -149,7 +150,8 @@
             
             <div class="item-card bg-white shadow rounded-xl overflow-hidden">
                 <div class="relative">
-                    <img src="https://source.unsplash.com/random/300x200/?gordita" alt="Gordita ChorizoConPapa" class="w-full h-40 object-cover">
+                    <img src="{{ url_for('static', filename='images/default.jpg') }}" 
+                    alt="Product Image" class="w-full h-32 object-cover rounded mb-2">
                     <span class="absolute top-2 right-2 bg-primary text-white text-sm px-2 py-1 rounded-full">$45.0</span>
                 </div>
                 <div class="p-4">
