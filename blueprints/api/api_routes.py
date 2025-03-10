@@ -6,12 +6,13 @@ from models.branch import Branch
 from models.menu import Recipe  # Add this missing import
 from models.stock import Ingredient  # Add this missing import
 from models.associations import menu_item_branches
+from models.modifications import OrderItemModification
 from blueprints.api import api_bp
 from datetime import datetime, timedelta
 from flask import jsonify
 from sqlalchemy.sql import text, func
 from models.orders import Order, OrderItem
-from services import update_stock
+from services import update_stock, check_stock_for_item
 from flask_socketio import SocketIO
 import socketio
 import random
@@ -245,71 +246,102 @@ def get_ingredient_stock():
 def place_order():
     try:
         data = request.json
-        print("🔥 Received order data:", data)  # Debugging print
+        print("🔥 Received order data:", data)
         
         table_number = data.get("table_number")
         branch_id = data.get("branch_id")
         order_items = data.get("items")
 
-        # Debugging prints to see what is missing
-        print(f"✅ Table Number: {table_number}")
-        print(f"✅ Branch ID: {branch_id}")
-        print(f"✅ Order Items: {order_items}")
-
         if not table_number or not branch_id or not order_items:
             print("❌ Missing required fields!")
             return jsonify({"error": "Missing table_number, branch_id, or items"}), 400
 
-        # Validate stock before creating the order
-        insufficient_stock = []
-        for item in order_items:
-            menu_item_id = item["menu_item_id"]
-            quantity = item["quantity"]
-            
-            # Get recipes for this menu item
-            recipes = Recipe.query.filter_by(menu_item_id=menu_item_id).all()
-            
-            for recipe in recipes:
-                ingredient = db.session.get(Ingredient, recipe.ingredient_id)
-                if ingredient:
-                    required_quantity = recipe.quantity_used * quantity
-                    if ingredient.total_quantity < required_quantity:
-                        insufficient_stock.append({
-                            "menu_item": MenuItem.query.get(menu_item_id).name,
-                            "ingredient": ingredient.name,
-                            "available": ingredient.total_quantity,
-                            "required": required_quantity
-                        })
-        
-        # If any ingredients have insufficient stock, return error
-        if insufficient_stock:
-            return jsonify({
-                "error": "Insufficient stock for some items",
-                "details": insufficient_stock
-            }), 400
-
-        # If we reach here, stock is sufficient, so create the order
+        # Create new order
         new_order = Order(table_number=table_number, status="pending", branch_id=branch_id)
         db.session.add(new_order)
         db.session.flush()  # Get the order ID before commit
 
+        order_total = 0.0
+
+        # Process each order item
         for item in order_items:
+            menu_item_id = item["menu_item_id"]
+            quantity = item["quantity"]
+            
+            # Get menu item details
+            menu_item = MenuItem.query.get(menu_item_id)
+            if not menu_item:
+                return jsonify({"error": f"Menu item {menu_item_id} not found"}), 404
+                
+            # Calculate item price (starts with base price)
+            item_price = menu_item.price
+            
+            # Create the order item record
             new_order_item = OrderItem(
                 order_id=new_order.id,
-                menu_item_id=item["menu_item_id"],
-                quantity=item["quantity"]
+                menu_item_id=menu_item_id,
+                quantity=quantity
             )
             db.session.add(new_order_item)
-
-            # ✅ Call the stock update function here!
+            db.session.flush()  # Get the new order item ID
+            
+            # Process modifications if any
+            modifications = item.get("modifications", [])
+            
+            # Check stock for all ingredients (including modifications)
+            stock_check = check_stock_for_item(menu_item_id, quantity, modifications)
+            if not stock_check["success"]:
+                return jsonify({
+                    "error": "Insufficient stock for some items",
+                    "details": stock_check["details"]
+                }), 400
+            
+            # Process and save each modification
+            for mod in modifications:
+                mod_type = mod.get("type")  # "add", "remove", "substitute"
+                ingredient_id = mod.get("ingredient_id")
+                price_adjustment = mod.get("price_adjustment", 0.0)
+                
+                # Update total item price
+                item_price += price_adjustment
+                
+                # Create modification record
+                new_mod = OrderItemModification(
+                    order_item_id=new_order_item.id,
+                    ingredient_id=ingredient_id,
+                    modification_type=mod_type,
+                    price_adjustment=price_adjustment
+                )
+                
+                # Additional fields based on modification type
+                if mod_type == "add":
+                    new_mod.quantity = mod.get("quantity", 1.0)
+                elif mod_type == "substitute":
+                    new_mod.replacement_ingredient_id = mod.get("replacement_id")
+                    new_mod.quantity = mod.get("quantity", 1.0)
+                
+                db.session.add(new_mod)
+            
+            # Add this item's price to the order total
+            order_total += item_price * quantity
+            
+            # Update stock for this item with its modifications
             update_stock(new_order_item)
 
         db.session.commit()
 
-        print("✅ Emitting WebSocket event: order_update")  # Debugging print
-        socketio.emit("order_update", {"message": "New order placed!"})
+        print("✅ Emitting WebSocket event: order_update")
+        socketio.emit("order_update", {
+            "message": "New order placed!",
+            "order_id": new_order.id,
+            "total": order_total
+        })
 
-        return jsonify({"message": "Order placed successfully", "order_id": new_order.id}), 201
+        return jsonify({
+            "message": "Order placed successfully", 
+            "order_id": new_order.id,
+            "total": order_total
+        }), 201
 
     except Exception as e:
         db.session.rollback()
@@ -530,3 +562,34 @@ def dashboard_summary():
             'inventory_alerts': 2
         })
         
+@api_bp.route("/menu-item/<int:id>")
+def get_menu_item(id):
+    try:
+        item = MenuItem.query.get_or_404(id)
+        
+        # Get recipe ingredients
+        ingredients = []
+        for recipe in Recipe.query.filter_by(menu_item_id=item.id).all():
+            ingredient = Ingredient.query.get(recipe.ingredient_id)
+            if ingredient:
+                ingredients.append({
+                    "id": ingredient.id,
+                    "name": ingredient.name,
+                    "quantity": recipe.quantity_used,
+                    "unit": recipe.unit
+                })
+        
+        return jsonify({
+            "id": item.id,
+            "name": item.name,
+            "price": item.price,
+            "ingredients": ingredients,
+            "standard_modifications": item.standard_modifications or {
+                "additions": [],
+                "removals": [],
+                "substitutions": []
+            }
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    

@@ -6,3 +6,4 @@ from .orders import Order, OrderItem
 from .stock import Ingredient
 from .branch import Branch
 from .associations import menu_item_branches
+from .modifications import  OrderItemModification

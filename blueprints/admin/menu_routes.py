@@ -134,3 +134,107 @@ def edit_menu_item(id):
     current_branch_ids = [branch.id for branch in item.branches]
     
     return render_template("edit_menu_item.html", item=item, branches=branches, current_branch_ids=current_branch_ids)
+
+@admin_bp.route("/menu/modifications/<int:id>", methods=["GET", "POST"])
+def edit_menu_item_modifications(id):
+    """Edit the standard modifications for a menu item"""
+    try:
+        item = MenuItem.query.get_or_404(id)
+        
+        if request.method == "POST":
+            try:
+                # Parse the modification data from the form
+                modifications = {
+                    "additions": [],
+                    "removals": [],
+                    "substitutions": []
+                }
+                
+                # Process additions
+                addition_ids = request.form.getlist("addition_ingredient_id[]")
+                addition_names = request.form.getlist("addition_name[]")
+                addition_prices = request.form.getlist("addition_price[]")
+                
+                for i in range(len(addition_ids)):
+                    if i < len(addition_names) and i < len(addition_prices) and addition_ids[i]:
+                        modifications["additions"].append({
+                            "ingredient_id": int(addition_ids[i]),
+                            "name": addition_names[i],
+                            "price": float(addition_prices[i]),
+                            "quantity": 1.0  # Default quantity
+                        })
+                
+                # Process removals
+                removal_ids = request.form.getlist("removal_ingredient_id[]")
+                removal_names = request.form.getlist("removal_name[]")
+                
+                for i in range(len(removal_ids)):
+                    if i < len(removal_names) and removal_ids[i]:
+                        modifications["removals"].append({
+                            "ingredient_id": int(removal_ids[i]),
+                            "name": removal_names[i],
+                            "price": 0.0  # Removals are typically free
+                        })
+                
+                # Process substitutions
+                sub_original_ids = request.form.getlist("sub_original_id[]")
+                sub_replacement_ids = request.form.getlist("sub_replacement_id[]")
+                sub_names = request.form.getlist("sub_name[]")
+                sub_prices = request.form.getlist("sub_price[]")
+                
+                for i in range(len(sub_original_ids)):
+                    if (i < len(sub_replacement_ids) and 
+                        i < len(sub_names) and 
+                        i < len(sub_prices) and
+                        sub_original_ids[i] and
+                        sub_replacement_ids[i]):
+                        modifications["substitutions"].append({
+                            "ingredient_id": int(sub_original_ids[i]),
+                            "replacement_id": int(sub_replacement_ids[i]),
+                            "name": sub_names[i],
+                            "price": float(sub_prices[i])
+                        })
+                
+                # Update the menu item with the new modifications
+                item.standard_modifications = modifications
+                db.session.commit()
+                
+                flash("Menu item modifications updated successfully!", "success")
+                return redirect(url_for("admin.admin_menu"))
+            except Exception as e:
+                db.session.rollback()
+                flash(f"Error updating modifications: {str(e)}", "danger")
+                return redirect(url_for("admin.edit_menu_item_modifications", id=id))
+        
+        # For GET requests, prepare the form
+        current_mods = item.standard_modifications or {
+            "additions": [],
+            "removals": [],
+            "substitutions": []
+        }
+        
+        # Get all ingredients for dropdowns
+        ingredients = Ingredient.query.filter_by(is_active=True).all()
+        
+        # Get ingredients used in this item's recipes
+        recipe_ingredients = []
+        for recipe in Recipe.query.filter_by(menu_item_id=item.id).all():
+            ingredient = Ingredient.query.get(recipe.ingredient_id)
+            if ingredient:
+                recipe_ingredients.append({
+                    "id": ingredient.id,
+                    "name": ingredient.name,
+                    "quantity": recipe.quantity_used,
+                    "unit": recipe.unit
+                })
+        
+        return render_template(
+            "edit_menu_item_modifications.html",
+            item=item,
+            modifications=current_mods,
+            ingredients=ingredients,
+            recipe_ingredients=recipe_ingredients
+        )
+    except Exception as e:
+        flash(f"Error loading modifications page: {str(e)}", "danger")
+        return redirect(url_for("admin.admin_menu"))
