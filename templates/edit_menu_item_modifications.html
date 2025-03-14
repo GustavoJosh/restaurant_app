@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Modifications - {{ item.name }} - Doña Pily</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'pily-gold': '#B8860B',
+                        'pily-orange': '#d68c00',
+                        'pily-light': '#FFF8E1',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .gradient-header {
+            background: linear-gradient(90deg, #d68c00 0%, #B8860B 100%);
+        }
+    </style>
+</head>
+<body class="bg-pily-light min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="gradient-header text-white shadow-lg py-4 px-6">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Doña Pily Logo" class="w-12 h-12 mr-3" onerror="this.src='https://via.placeholder.com/48'; this.onerror=null;">
+                <div>
+                    <h1 class="text-2xl font-bold">Doña Pily</h1>
+                    <p class="text-sm">Sistema Administrativo</p>
+                </div>
+            </div>
+            <div>
+                <a href="/" class="bg-white text-pily-orange px-4 py-2 rounded-full hover:bg-gray-100 transition duration-300">
+                    <i class="fas fa-home mr-2"></i>Panel Principal
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto py-8 px-4 flex-grow">
+        <!-- Title Bar -->
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h2 class="text-3xl font-bold text-pily-orange">Edit Modifications</h2>
+                <p class="text-gray-600">Configure special requests options for: <span class="font-bold">{{ item.name }}</span></p>
+            </div>
+            <div>
+                <a href="{{ url_for('admin.admin_menu') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-5 py-2 rounded-lg shadow-md transition duration-300">
+                    Back to Menu
+                </a>
+            </div>
+        </div>
+
+        <!-- Current Recipe Card -->
+        <div class="bg-white rounded-xl shadow-md mb-8 overflow-hidden">
+            <div class="gradient-header p-4 text-white">
+                <h3 class="text-lg font-bold">Current Recipe Ingredients</h3>
+            </div>
+            <div class="p-4">
+                {% if recipe_ingredients %}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {% for ingredient in recipe_ingredients %}
+                    <div class="bg-pily-light p-3 rounded-lg">
+                        <div class="flex justify-between items-center">
+                            <span class="font-medium">{{ ingredient.name }}</span>
+                            <span class="text-sm bg-pily-orange text-white px-2 py-1 rounded-full">{{ ingredient.quantity }} {{ ingredient.unit }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4 text-gray-500">
+                    <p>No ingredients defined for this item yet.</p>
+                    <a href="{{ url_for('admin.edit_recipe', id=item.id) }}" class="text-pily-orange hover:underline mt-2 inline-block">Add Recipe First</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <form method="POST" action="{{ url_for('admin.edit_menu_item_modifications', id=item.id) }}">
+            <!-- Additions Section -->
+            <div class="bg-white rounded-xl shadow-md mb-8 overflow-hidden">
+                <div class="bg-green-600 p-4 text-white flex justify-between items-center">
+                    <h3 class="text-lg font-bold">Extra Additions</h3>
+                    <button type="button" id="add-addition" class="bg-white text-green-600 px-3 py-1 rounded-full hover:bg-green-100 transition duration-300 text-sm font-bold">
+                        + Add Option
+                    </button>
+                </div>
+                <div class="p-4">
+                    <p class="text-gray-600 mb-4">Configure extra ingredients customers can add for an additional price</p>
+                    
+                    <div id="additions-container">
+                        {% for addition in modifications.additions %}
+                        <div class="addition-row bg-gray-50 p-4 rounded-lg mb-4">
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Ingredient</label>
+                                    <select name="addition_ingredient_id[]" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-pily-orange focus:ring focus:ring-pily-orange focus:ring-opacity-50" required>
+                                        <option value="">Select Ingredient</option>
+                                        {% for ingredient in ingredients %}
+                                        <option value="{{ ingredient.id }}" {% if addition.ingredient_id == ingredient.id %}selected{% endif %}>
+                                            {{ ingredient.name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Display Name</label>
+                                    <input type="text" name="addition_name[]" placeholder="e.g. Extra Cheese" 
+                                           value="{{ addition.name }}" 
+                                           class="w-full rounded-lg border-gray-300 shadow-sm focus:border-pily-orange focus:ring focus:ring-pily-orange focus:ring-opacity-50" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Price</label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <span class="text-gray-500 sm:text-sm">$</span>
+                                        </div>
+                                        <input type="number" name="addition_price[]" placeholder="0.00" step="0.01" min="0"
+                                               value="{{ addition.price }}"
+                                               class="w-full pl-7 rounded-lg border-gray-300 shadow-sm focus:border-pily-orange focus:ring focus:ring-pily-orange focus:ring-opacity-50" required>
+                                    </div>
+                                </div>
+                                <div class="flex items-end">
+                                    <button type="button" class="remove-row bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg transition duration-300 w-full">
+                                        Remove
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Template for new addition row (hidden) -->
+                    <div class="addition-row bg-gray-50 p-4 rounded-lg mb-4 hidden" id="addition-template">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Ingredient</label>
+                                <select name="addition_ingredient_id[]" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-pily-orange focus:ring focus:ring-pily-orange focus:ring-opacity-50" required disabled>
+                                    <option value="">Select Ingredient</option>
+                                    {% for ingredient in ingredients %}
+                                    <option value="{{ ingredient.id }}">{{ ingredient.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Display Name</label>
+                                <input type="text" name="addition_name[]" placeholder="e.g. Extra Cheese" 
+                                       class="w-full rounded-lg border-gray-300 shadow-sm focus:border-pily-orange focus:ring focus:ring-pily-orange focus:ring-opacity-50" required disabled>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Price</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 sm:text-sm">$</span>
+                                    </div>
+                                    <input type="number" name="addition_price[]" placeholder="0.00" step="0.01" min="0" value="0.00"
+                                           class="w-full pl-7 rounded-lg border-gray-300 shadow-sm focus:border-pily-orange focus:ring focus:ring-pily-orange focus:ring-opacity-50" required disabled>
+                                </div>
+                            </div>
+                            <div class="flex items-end">
+                                <button type="button" class="remove-row bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg transition duration-300 w-full">
+                                    Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if not modifications.additions %}
+                    <div class="text-center py-4 text-gray-500" id="no-additions-message">
+                        <p>No extra additions configured yet. Add your first one!</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Removals Section -->
+            <div class="bg-white rounded-xl shadow-md mb-8 overflow-hidden">
+                <div class="bg-yellow-600 p-4 text-white flex justify-between items-center">
+                    <h3 class="text-lg font-bold">Removal Options</h3>
+                    <button type="button" id="add-removal" class="bg-white text-yellow-600 px-3 py-1 rounded-full hover:bg-yellow-100 transition duration-300 text-sm font-bold">
+                        + Add Option
+                    </button>
+                </div>
+                <div class="p-4">
+                    <p class="text-gray-600 mb-4">Configure which ingredients customers can choose to remove</p>
+                    
+                    <div id="removals-container">
+                        {% for removal in modifications.removals %}
+                        <div class="removal-row bg-gray-50 p-4 rounded-lg mb-4">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Ingredient</label>
+                                    <select name="removal_ingredient_id[]" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-pily-orange focus:ring focus:ring-pily-orange focus:ring-opacity-50" required>
+                                        <option value="">Select Ingredient</option>
+                                        {% for ingredient in recipe_ingredients %}
+                                        <option value="{{ ingredient.id }}" {% if removal.ingredient_id == ingredient.id %}selected{% endif %}>
+                                            {{ ingredient.name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Display Name</label>
+                                    <input type="text" name="removal_name[]" placeholder="e.g. No Onions" 
+                                           value="{{ removal.name }}" 
+                                           class="w-full rounded-lg border-gray-300 shadow-sm focus:border-pily-orange focus:ring focus:ring-pily-orange focus:ring-opacity-50" required>
+                                </div>
+                                <div class="flex items-end">
+                                    <button type="button" class="remove-row bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg transition duration-300 w-full">
+                                        Remove
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Template for new removal row (hidden) -->
+                    <div class="removal-row bg-gray-50 p-4 rounded-lg mb-4 hidden" id="removal-template">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Ingredient</label>
+                                <select name="removal_ingredient_id[]" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-pily-orange focus:ring focus:ring-pily-orange focus:ring-opacity-50" required disabled>
+                                    <option value="">Select Ingredient</option>
+                                    {% for ingredient in recipe_ingredients %}
+                                    <option value="{{ ingredient.id }}">{{ ingredient.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Display Name</label>
+                                <input type="text" name="removal_name[]" placeholder="e.g. No Onions" 
+                                       class="w-full rounded-lg border-gray-300 shadow-sm focus:border-pily-orange focus:ring focus:ring-pily-orange focus:ring-opacity-50" required disabled>
+                            </div>
+                            <div class="flex items-end">
+                                <button type="button" class="remove-row bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg transition duration-300 w-full">
+                                    Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if not modifications.removals %}
+                    <div class="text-center py-4 text-gray-500" id="no-removals-message">
+                        <p>No removal options configured yet. Add your first one!</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Substitutions Section -->
+            <div class="bg-white rounded-xl shadow-md mb-8 overflow-hidden">
+                <div class="bg-blue-600 p-4 text-white flex justify-between items-center">
+                    <h3 class="text-lg font-bold">Substitution Options</h3>
+                    <button type="button" id="add-substitution" class="bg-white text-blue-600 px-3 py-1 rounded-full hover:bg-blue-100 transition duration-300 text-sm font-bold">
+                        + Add Option
+                    </button>
+                </div>
+                <div class="p-4">
+                    <p class="text-gray-600 mb-4">Configure ingredient substitutions customers can select</p>
+                    
+                    <div id="substitutions-container">
+                        {% for sub in modifications.substitutions %}
+                        <div class="substitution-row bg-gray-50 p-4 rounded-lg mb-4">
+                            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Original Ingredient</label>
+                                    <select name="sub_original_id[]" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-pily-orange focus:ring focus:ring-pily-orange focus:ring-opacity-50" required>
+                                        <option value="">Select Ingredient</option>
+                                        {% for ingredient in recipe_ingredients %}
+                                        <option value="{{ ingredient.id }}" {% if sub.ingredient_id == ingredient.id %}selected{% endif %}>
+                                            {{ ingredient.name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Replacement</label>
+                                    <select name="sub_replacement_id[]" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-pily-orange focus:ring focus:ring-pily-orange focus:ring-opacity-50" required>
+                                        <option value="">Select Replacement</option>
+                                        {% for ingredient in ingredients %}
+                                        <option value="{{ ingredient.id }}" {% if sub.replacement_id == ingredient.id %}selected{% endif %}>
+                                            {{ ingredient.name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Display Name</label>
+                                    <input type="text" name="sub_name[]" placeholder="e.g. Replace Chicken with Beef" 
+                                           value="{{ sub.name }}" 
+                                           class="w-full rounded-lg border-gray-300 shadow-sm focus:border-pily-orange focus:ring focus:ring-pily-orange focus:ring-opacity-50" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Price</label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <span class="text-gray-500 sm:text-sm">$</span>
+                                        </div>
+                                        <input type="number" name="sub_price[]" placeholder="0.00" step="0.01" min="0"
+                                               value="{{ sub.price }}"
+                                               class="w-full pl-7 rounded-lg border-gray-300 shadow-sm focus:border-pily-orange focus:ring focus:ring-pily-orange focus:ring-opacity-50" required>
+                                    </div>
+                                </div>
+                                <div class="flex items-end">
+                                    <button type="button" class="remove-row bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg transition duration-300 w-full">
+                                        Remove
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Template for new substitution row (hidden) -->
+                    <div class="substitution-row bg-gray-50 p-4 rounded-lg mb-4 hidden" id="substitution-template">
+                        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Original Ingredient</label>
+                                <select name="sub_original_id[]" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-pily-orange focus:ring focus:ring-pily-orange focus:ring-opacity-50" required disabled>
+                                    <option value="">Select Ingredient</option>
+                                    {% for ingredient in recipe_ingredients %}
+                                    <option value="{{ ingredient.id }}">{{ ingredient.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Replacement</label>
+                                <select name="sub_replacement_id[]" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-pily-orange focus:ring focus:ring-pily-orange focus:ring-opacity-50" required disabled>
+                                    <option value="">Select Replacement</option>
+                                    {% for ingredient in ingredients %}
+                                    <option value="{{ ingredient.id }}">{{ ingredient.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Display Name</label>
+                                <input type="text" name="sub_name[]" placeholder="e.g. Replace Chicken with Beef" 
+                                       class="w-full rounded-lg border-gray-300 shadow-sm focus:border-pily-orange focus:ring focus:ring-pily-orange focus:ring-opacity-50" required disabled>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Price</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 sm:text-sm">$</span>
+                                    </div>
+                                    <input type="number" name="sub_price[]" placeholder="0.00" step="0.01" min="0" value="0.00"
+                                           class="w-full pl-7 rounded-lg border-gray-300 shadow-sm focus:border-pily-orange focus:ring focus:ring-pily-orange focus:ring-opacity-50" required disabled>
+                                </div>
+                            </div>
+                            <div class="flex items-end">
+                                <button type="button" class="remove-row bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg transition duration-300 w-full">
+                                    Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if not modifications.substitutions %}
+                    <div class="text-center py-4 text-gray-500" id="no-substitutions-message">
+                        <p>No substitution options configured yet. Add your first one!</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex justify-between">
+                <a href="{{ url_for('admin.admin_menu') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg shadow-md transition duration-300">
+                    Cancel
+                </a>
+                <button type="submit" class="bg-pily-orange hover:bg-pily-gold text-white px-6 py-3 rounded-lg shadow-md transition duration-300">
+                    Save Modifications
+                </button>
+            </div>
+        </form>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-pily-orange text-white py-4 mt-auto">
+        <div class="container mx-auto px-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <p class="text-sm">© 2025 Gorditas Doña Pily</p>
+                    <p class="text-xs">La Paz, BCS</p>
+                </div>
+                <div>
+                    <a href="/" class="text-white hover:text-yellow-200 transition duration-300">Back to Home</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle addition of new rows
+        document.getElementById('add-addition').addEventListener('click', function() {
+            addNewRow('addition');
+            // Hide "no items" message if it exists
+            const noMessage = document.getElementById('no-additions-message');
+            if (noMessage) noMessage.style.display = 'none';
+        });
+        
+        document.getElementById('add-removal').addEventListener('click', function() {
+            addNewRow('removal');
+            // Hide "no items" message if it exists
+            const noMessage = document.getElementById('no-removals-message');
+            if (noMessage) noMessage.style.display = 'none';
+        });
+        
+        document.getElementById('add-substitution').addEventListener('click', function() {
+            addNewRow('substitution');
+            // Hide "no items" message if it exists
+            const noMessage = document.getElementById('no-substitutions-message');
+            if (noMessage) noMessage.style.display = 'none';
+        });
+        
+        // Handle deletion of rows
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('remove-row')) {
+                e.target.closest('.removal-row, .addition-row, .substitution-row').remove();
+                
+                // Check if we need to show "no items" messages
+                checkEmptyContainers();
+            }
+        });
+        
+        function addNewRow(type) {
+            // Clone the template
+            const template = document.getElementById(`${type}-template`);
+            const container = document.getElementById(`${type}s-container`);
+            
+            const newRow = template.cloneNode(true);
+            newRow.classList.remove('hidden');
+            newRow.removeAttribute('id');
+            
+            // Enable all form controls
+            newRow.querySelectorAll('input, select').forEach(function(el) {
+                el.disabled = false;
+            });
+            
+            // Add to container
+            container.appendChild(newRow);
+        }
+        
+        function checkEmptyContainers() {
+            const containersToCheck = [
+                {container: 'additions-container', message: 'no-additions-message'},
+                {container: 'removals-container', message: 'no-removals-message'},
+                {container: 'substitutions-container', message: 'no-substitutions-message'}
+            ];
+            
+            containersToCheck.forEach(item => {
+                const container = document.getElementById(item.container);
+                const message = document.getElementById(item.message);
+                
+                // Count visible rows (not templates)
+                const visibleRows = container.querySelectorAll(`.${item.container.replace('-container', '-row')}:not([id])`).length;
+                
+                if (message && visibleRows === 0) {
+                    message.style.display = 'block';
+                }
+            });
+        }
+    });
+    </script>
+</body>
+</html>

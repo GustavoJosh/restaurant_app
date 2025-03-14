@@ -71,6 +71,19 @@
             from { transform: translateY(20px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
+        /* Custom badge for customizable items */
+        .customizable-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background-color: #d68c00;
+            color: white;
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            z-index: 5;
+        }
     </style>
 </head>
 <body class="bg-white min-h-screen flex flex-col">
@@ -136,9 +149,14 @@
             <!-- Menu Items Grid -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {% for item in menu_items %}
-                <div class="menu-item bg-white rounded-xl shadow-md overflow-hidden relative" data-id="{{ item.id }}">
+                <div class="menu-item bg-white rounded-xl shadow-md overflow-hidden relative {% if item.name == 'Gordita Personalizada' %}customizable{% endif %}" data-id="{{ item.id }}">
                     <!-- Hidden quantity badge, shown when item is in cart -->
                     <div class="quantity-badge hidden" id="badge-{{ item.id }}">0</div>
+                    
+                    <!-- Customizable badge, only for special items -->
+                    {% if item.name == 'Gordita Personalizada' %}
+                    <div class="customizable-badge">Personalizable</div>
+                    {% endif %}
                     
                     <!-- Food Image -->
                     <img src="{{ url_for('static', filename='images/' + item.image_url) if item.image_url else url_for('static', filename='images/default.jpg') }}" 
@@ -151,11 +169,20 @@
                         <p class="text-gray-600 text-sm mb-2 h-10 overflow-hidden">{{ item.description if item.description else 'Deliciosa receta tradicional' }}</p>
                         <div class="flex justify-between items-center">
                             <span class="text-pily-orange font-bold">${{ item.price }}</span>
+                            
+                            <!-- For non-customizable items, show quantity controls -->
+                            {% if item.name != 'Gordita Personalizada' %}
                             <div class="flex items-center">
                                 <button class="decrease-qty bg-red-500 text-white w-8 h-8 rounded-l-full flex items-center justify-center" data-id="{{ item.id }}">-</button>
                                 <span class="px-3 item-qty" id="qty-{{ item.id }}">0</span>
                                 <button class="increase-qty bg-pily-orange text-white w-8 h-8 rounded-r-full flex items-center justify-center" data-id="{{ item.id }}">+</button>
                             </div>
+                            {% else %}
+                            <!-- For customizable items, show a different button -->
+                            <button class="customize-btn bg-pily-orange text-white px-3 py-1 rounded-full flex items-center" data-id="{{ item.id }}">
+                                <span class="mr-1">✏️</span> Personalizar
+                            </button>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -265,6 +292,92 @@
         </div>
     </div>
 
+    <!-- Item modification modal -->
+    <div id="item-modification-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <!-- Modal header -->
+            <div class="gradient-header p-4 text-white sticky top-0 z-10">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xl font-bold" id="modal-item-name">Item Name</h3>
+                    <button type="button" id="close-modal" class="text-white hover:text-red-200 text-xl">
+                        &times;
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Modal body -->
+            <div class="p-6">
+                <input type="hidden" id="modal-item-id" value="">
+                <input type="hidden" id="modal-item-price" value="">
+                
+                <!-- Base ingredients display -->
+                <div class="mb-6">
+                    <h4 class="text-lg font-bold text-pily-orange mb-2">Ingredients</h4>
+                    <div id="modal-ingredients" class="flex flex-wrap gap-2">
+                        <!-- Ingredients will be inserted here -->
+                    </div>
+                </div>
+                
+                <!-- Removals Section -->
+                <div class="mb-6" id="removals-section">
+                    <h4 class="text-lg font-bold text-pily-orange mb-2">Remove Ingredients</h4>
+                    <div id="removal-options" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <!-- Removal options will be inserted here -->
+                    </div>
+                </div>
+                
+                <!-- Additions Section -->
+                <div class="mb-6" id="additions-section">
+                    <h4 class="text-lg font-bold text-pily-orange mb-2">Add Extra Ingredients</h4>
+                    <div id="addition-options" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <!-- Addition options will be inserted here -->
+                    </div>
+                </div>
+                
+                <!-- Substitutions Section -->
+                <div class="mb-6" id="substitutions-section">
+                    <h4 class="text-lg font-bold text-pily-orange mb-2">Substitute Ingredients</h4>
+                    <div id="substitution-options" class="grid grid-cols-1 gap-3">
+                        <!-- Substitution options will be inserted here -->
+                    </div>
+                </div>
+                
+                <!-- Special Instructions -->
+                <div class="mb-6">
+                    <h4 class="text-lg font-bold text-pily-orange mb-2">Special Instructions</h4>
+                    <textarea id="special-instructions" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-pily-orange focus:ring focus:ring-pily-orange focus:ring-opacity-50" rows="2" placeholder="Any additional instructions..."></textarea>
+                </div>
+                
+                <!-- Quantity selector -->
+                <div class="mb-6">
+                    <h4 class="text-lg font-bold text-pily-orange mb-2">Quantity</h4>
+                    <div class="flex items-center">
+                        <button type="button" id="decrease-quantity" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-l">
+                            -
+                        </button>
+                        <input type="number" id="item-quantity" class="w-16 text-center border-gray-300 focus:border-pily-orange focus:ring focus:ring-pily-orange focus:ring-opacity-50" value="1" min="1" max="99">
+                        <button type="button" id="increase-quantity" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-r">
+                            +
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Price display -->
+                <div class="mb-6">
+                    <div class="flex justify-between items-center">
+                        <h4 class="text-lg font-bold text-pily-orange">Item Total:</h4>
+                        <div class="text-2xl font-bold">$<span id="total-price">0.00</span></div>
+                    </div>
+                </div>
+                
+                <!-- Add to order button -->
+                <button type="button" id="add-to-order" class="w-full bg-pily-orange hover:bg-pily-gold text-white font-bold py-3 px-4 rounded-lg transition duration-300">
+                    Add to Order
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let cart = {};
         
@@ -288,10 +401,41 @@
                 
                 let li = document.createElement("li");
                 li.className = "flex justify-between items-start border-b border-gray-200 pb-3 cart-item-animation";
+                
+                // Generate modification text if any
+                let modificationsHtml = '';
+                if (item.modifications && item.modifications.length > 0) {
+                    modificationsHtml = '<div class="text-xs text-gray-400 mt-1">';
+                    item.modifications.forEach(mod => {
+                        let modText = '';
+                        switch(mod.type) {
+                            case 'add':
+                                modText = `+ ${mod.name}`;
+                                break;
+                            case 'remove':
+                                modText = `- ${mod.name}`;
+                                break;
+                            case 'substitute':
+                                modText = `${mod.name}`;
+                                break;
+                        }
+                        modificationsHtml += `<div>${modText}</div>`;
+                    });
+                    modificationsHtml += '</div>';
+                }
+                
+                // Add special instructions if any
+                let instructionsHtml = '';
+                if (item.special_instructions) {
+                    instructionsHtml = `<div class="text-xs italic text-gray-500 mt-1">"${item.special_instructions}"</div>`;
+                }
+                
                 li.innerHTML = `
                     <div class="flex-1">
                         <div class="font-medium">${item.name}</div>
                         <div class="text-sm text-gray-500">$${item.price.toFixed(2)} × ${item.quantity}</div>
+                        ${modificationsHtml}
+                        ${instructionsHtml}
                     </div>
                     <div class="font-medium text-pily-dark">$${itemTotal.toFixed(2)}</div>
                     <button class="remove-item ml-2 text-red-500 hover:text-red-700" data-id="${itemId}">
@@ -386,6 +530,14 @@
             });
         });
         
+        // Add event listeners for customizable items
+        document.querySelectorAll(".customize-btn").forEach(button => {
+            button.addEventListener("click", () => {
+                let itemId = button.getAttribute("data-id");
+                openItemModal(itemId);
+            });
+        });
+        
         // Cart modal controls
         document.getElementById("view-cart-btn").addEventListener("click", () => {
             document.getElementById("cart-modal").classList.remove("hidden");
@@ -412,13 +564,24 @@
             
             let tableNumber = document.getElementById("table-number").value;
             
+            // Transform cart object to array of items with modifications
+            const items = Object.keys(cart).map(id => {
+                const item = cart[id];
+                return {
+                    menu_item_id: parseInt(id),
+                    quantity: item.quantity,
+                    modifications: item.modifications || [],
+                    special_instructions: item.special_instructions || ""
+                };
+            });
+            
             fetch("/api/order", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     table_number: tableNumber,
                     branch_id: "1", // Default branch ID
-                    items: Object.keys(cart).map(id => ({ menu_item_id: id, quantity: cart[id].quantity }))
+                    items: items
                 })
             })
             .then(response => response.json())
@@ -462,6 +625,342 @@
         
         // Initialize cart display
         updateCart();
+        
+        // ===== MODAL FUNCTIONALITY =====
+        // Data structure for current modifications
+        let currentModifications = [];
+        let basePrice = 0;
+        let baseIngredients = [];
+    
+        // Function to open modal with menu item details
+        function openItemModal(itemId) {
+            // Reset modifications
+            currentModifications = [];
+            
+            // Get menu item details via AJAX
+            fetch(`/api/menu-item/${itemId}`)
+                .then(response => response.json())
+                .then(item => {
+                    // Set item details
+                    document.getElementById('modal-item-name').textContent = item.name;
+                    document.getElementById('modal-item-id').value = item.id;
+                    document.getElementById('modal-item-price').value = item.price;
+                    basePrice = item.price;
+                    
+                    // Set base ingredients
+                    const ingredientsContainer = document.getElementById('modal-ingredients');
+                    ingredientsContainer.innerHTML = '';
+                    baseIngredients = item.ingredients || [];
+                    
+                    baseIngredients.forEach(ingredient => {
+                        const badge = document.createElement('span');
+                        badge.className = 'bg-pily-light text-pily-orange px-3 py-1 rounded-full text-sm';
+                        badge.textContent = ingredient.name;
+                        ingredientsContainer.appendChild(badge);
+                    });
+                    
+                    // Set removal options
+                    const removalContainer = document.getElementById('removal-options');
+                    removalContainer.innerHTML = '';
+                    
+                    const removals = item.standard_modifications?.removals || [];
+                    if (removals.length > 0) {
+                        removals.forEach(removal => {
+                            const div = document.createElement('div');
+                            div.className = 'flex items-center space-x-2';
+                            div.innerHTML = `
+                                <input type="checkbox" id="remove-${removal.ingredient_id}" 
+                                       class="removal-checkbox rounded border-gray-300 text-pily-orange focus:ring-pily-orange"
+                                       data-id="${removal.ingredient_id}" data-price="${removal.price || 0}" data-name="${removal.name}">
+                                <label for="remove-${removal.ingredient_id}" class="text-sm">${removal.name}</label>
+                            `;
+                            removalContainer.appendChild(div);
+                        });
+                        document.getElementById('removals-section').classList.remove('hidden');
+                    } else {
+                        document.getElementById('removals-section').classList.add('hidden');
+                    }
+                    
+                    // Set addition options
+                    const additionContainer = document.getElementById('addition-options');
+                    additionContainer.innerHTML = '';
+                    
+                    const additions = item.standard_modifications?.additions || [];
+                    if (additions.length > 0) {
+                        additions.forEach(addition => {
+                            const div = document.createElement('div');
+                            div.className = 'flex items-center space-x-2';
+                            div.innerHTML = `
+                                <input type="checkbox" id="add-${addition.ingredient_id}" 
+                                       class="addition-checkbox rounded border-gray-300 text-pily-orange focus:ring-pily-orange"
+                                       data-id="${addition.ingredient_id}" data-price="${addition.price || 0}" data-name="${addition.name}">
+                                <label for="add-${addition.ingredient_id}" class="text-sm">${addition.name} (+$${addition.price})</label>
+                                <select class="quantity-select ml-2 text-sm rounded border-gray-300 hidden" data-id="${addition.ingredient_id}">
+                                    <option value="1">1×</option>
+                                    <option value="2">2×</option>
+                                    <option value="3">3×</option>
+                                </select>
+                            `;
+                            additionContainer.appendChild(div);
+                        });
+                        document.getElementById('additions-section').classList.remove('hidden');
+                    } else {
+                        document.getElementById('additions-section').classList.add('hidden');
+                    }
+                    
+                    // Set substitution options
+                    const substitutionContainer = document.getElementById('substitution-options');
+                    substitutionContainer.innerHTML = '';
+                    
+                    const substitutions = item.standard_modifications?.substitutions || [];
+                    if (substitutions.length > 0) {
+                        // Group substitutions by original ingredient
+                        const groupedSubs = {};
+                        substitutions.forEach(sub => {
+                            if (!groupedSubs[sub.ingredient_id]) {
+                                groupedSubs[sub.ingredient_id] = [];
+                            }
+                            groupedSubs[sub.ingredient_id].push(sub);
+                        });
+                        
+                        // Create radio button groups for each original ingredient
+                        Object.keys(groupedSubs).forEach(ingredientId => {
+                            const subs = groupedSubs[ingredientId];
+                            const originalIngredient = baseIngredients.find(ing => ing.id == ingredientId);
+                            
+                            if (originalIngredient) {
+                                const fieldset = document.createElement('fieldset');
+                                fieldset.className = 'border border-gray-200 rounded-lg p-3';
+                                
+                                const legend = document.createElement('legend');
+                                legend.className = 'text-sm font-medium px-2';
+                                legend.textContent = `Replace ${originalIngredient.name} with:`;
+                                fieldset.appendChild(legend);
+                                
+                                // Add "No substitution" option
+                                const defaultDiv = document.createElement('div');
+                                defaultDiv.className = 'flex items-center space-x-2 mb-2';
+                                defaultDiv.innerHTML = `
+                                    <input type="radio" name="sub-${ingredientId}" id="sub-${ingredientId}-default" 
+                                           class="substitution-radio rounded-full border-gray-300 text-pily-orange focus:ring-pily-orange"
+                                           checked data-id="${ingredientId}" data-action="none">
+                                    <label for="sub-${ingredientId}-default" class="text-sm">No substitution</label>
+                                `;
+                                fieldset.appendChild(defaultDiv);
+                                
+                                // Add each substitution option
+                                subs.forEach(sub => {
+                                    const div = document.createElement('div');
+                                    div.className = 'flex items-center space-x-2 mb-2';
+                                    div.innerHTML = `
+                                        <input type="radio" name="sub-${ingredientId}" id="sub-${ingredientId}-${sub.replacement_id}" 
+                                               class="substitution-radio rounded-full border-gray-300 text-pily-orange focus:ring-pily-orange"
+                                               data-id="${ingredientId}" data-replacement="${sub.replacement_id}" 
+                                               data-price="${sub.price}" data-name="${sub.name}">
+                                        <label for="sub-${ingredientId}-${sub.replacement_id}" class="text-sm">${sub.name} (+$${sub.price})</label>
+                                    `;
+                                    fieldset.appendChild(div);
+                                });
+                                
+                                substitutionContainer.appendChild(fieldset);
+                            }
+                        });
+                        document.getElementById('substitutions-section').classList.remove('hidden');
+                    } else {
+                        document.getElementById('substitutions-section').classList.add('hidden');
+                    }
+                    
+                    // Update total price
+                    updateTotalPrice();
+                    
+                    // Show the modal
+                    document.getElementById('item-modification-modal').classList.remove('hidden');
+                })
+                .catch(error => {
+                    console.error('Error fetching menu item:', error);
+                    alert('Error fetching menu item details. Please try again.');
+                });
+        }
+        
+        // Function to close the modal
+        function closeItemModal() {
+            document.getElementById('item-modification-modal').classList.add('hidden');
+            // Reset form elements
+            document.getElementById('special-instructions').value = '';
+            document.getElementById('item-quantity').value = '1';
+        }
+        
+        // Function to update the total price based on modifications and quantity
+        function updateTotalPrice() {
+            const quantity = parseInt(document.getElementById('item-quantity').value) || 1;
+            let itemPrice = basePrice;
+            
+            // Add prices from checked additions
+            document.querySelectorAll('.addition-checkbox:checked').forEach(checkbox => {
+                const price = parseFloat(checkbox.dataset.price) || 0;
+                const quantitySelect = document.querySelector(`.quantity-select[data-id="${checkbox.dataset.id}"]`);
+                const multiplier = quantitySelect ? parseInt(quantitySelect.value) || 1 : 1;
+                itemPrice += price * multiplier;
+            });
+            
+            // Add prices from selected substitutions
+            document.querySelectorAll('.substitution-radio:checked').forEach(radio => {
+                if (radio.dataset.replacement) {
+                    const price = parseFloat(radio.dataset.price) || 0;
+                    itemPrice += price;
+                }
+            });
+            
+            // Update the displayed price
+            const totalPrice = (itemPrice * quantity).toFixed(2);
+            document.getElementById('total-price').textContent = totalPrice;
+        }
+        
+        // Function to collect all modifications for the order
+        function collectModifications() {
+            const modifications = [];
+            
+            // Process removals
+            document.querySelectorAll('.removal-checkbox:checked').forEach(checkbox => {
+                modifications.push({
+                    type: "remove",
+                    ingredient_id: parseInt(checkbox.dataset.id),
+                    name: checkbox.dataset.name,
+                    price_adjustment: parseFloat(checkbox.dataset.price) || 0
+                });
+            });
+            
+            // Process additions
+            document.querySelectorAll('.addition-checkbox:checked').forEach(checkbox => {
+                const quantitySelect = document.querySelector(`.quantity-select[data-id="${checkbox.dataset.id}"]`);
+                const quantity = quantitySelect ? parseInt(quantitySelect.value) || 1 : 1;
+                
+                modifications.push({
+                    type: "add",
+                    ingredient_id: parseInt(checkbox.dataset.id),
+                    name: checkbox.dataset.name,
+                    quantity: quantity,
+                    price_adjustment: (parseFloat(checkbox.dataset.price) || 0) * quantity
+                });
+            });
+            
+            // Process substitutions
+            document.querySelectorAll('.substitution-radio:checked').forEach(radio => {
+                if (radio.dataset.replacement) {
+                    modifications.push({
+                        type: "substitute",
+                        ingredient_id: parseInt(radio.dataset.id),
+                        replacement_id: parseInt(radio.dataset.replacement),
+                        name: radio.dataset.name,
+                        price_adjustment: parseFloat(radio.dataset.price) || 0
+                    });
+                }
+            });
+            
+            return modifications;
+        }
+        
+        // Add event listeners for modal functions
+        document.addEventListener('DOMContentLoaded', function() {
+            // Close modal event
+            document.getElementById('close-modal').addEventListener('click', closeItemModal);
+            
+            // Quantity buttons
+            document.getElementById('decrease-quantity').addEventListener('click', function() {
+                const quantityInput = document.getElementById('item-quantity');
+                const currentVal = parseInt(quantityInput.value) || 1;
+                if (currentVal > 1) {
+                    quantityInput.value = currentVal - 1;
+                    updateTotalPrice();
+                }
+            });
+            
+            document.getElementById('increase-quantity').addEventListener('click', function() {
+                const quantityInput = document.getElementById('item-quantity');
+                const currentVal = parseInt(quantityInput.value) || 1;
+                if (currentVal < 99) {
+                    quantityInput.value = currentVal + 1;
+                    updateTotalPrice();
+                }
+            });
+            
+            // Update price when quantity changes
+            document.getElementById('item-quantity').addEventListener('change', updateTotalPrice);
+            
+            // Event delegation for modification checkboxes
+            document.addEventListener('change', function(e) {
+                // Handle addition checkboxes
+                if (e.target.classList.contains('addition-checkbox')) {
+                    const quantitySelect = document.querySelector(`.quantity-select[data-id="${e.target.dataset.id}"]`);
+                    if (quantitySelect) {
+                        quantitySelect.classList.toggle('hidden', !e.target.checked);
+                    }
+                    updateTotalPrice();
+                }
+                
+                // Handle other modification changes
+                if (e.target.classList.contains('removal-checkbox') || 
+                    e.target.classList.contains('substitution-radio') ||
+                    e.target.classList.contains('quantity-select')) {
+                    updateTotalPrice();
+                }
+            });
+            
+            // Add to order button
+            document.getElementById('add-to-order').addEventListener('click', function() {
+                const itemId = document.getElementById('modal-item-id').value;
+                const quantity = parseInt(document.getElementById('item-quantity').value) || 1;
+                const specialInstructions = document.getElementById('special-instructions').value.trim();
+                const modifications = collectModifications();
+                
+                // Get the menu item details
+                const itemName = document.getElementById('modal-item-name').textContent;
+                const itemPrice = parseFloat(document.getElementById('modal-item-price').value);
+                
+                // Calculate the modified price
+                let modifiedPrice = itemPrice;
+                modifications.forEach(mod => {
+                    modifiedPrice += mod.price_adjustment || 0;
+                });
+                
+                // Add to cart
+                if (!cart[itemId]) {
+                    cart[itemId] = { 
+                        name: itemName, 
+                        price: modifiedPrice,
+                        quantity: 0,
+                        modifications: [],
+                        special_instructions: ''
+                    };
+                }
+                
+                // Update the item
+                cart[itemId].quantity += quantity;
+                cart[itemId].modifications = modifications;
+                cart[itemId].special_instructions = specialInstructions;
+                
+                // Update the UI
+                const quantityElement = document.getElementById(`qty-${itemId}`);
+                if (quantityElement) {
+                    quantityElement.textContent = cart[itemId].quantity;
+                }
+                
+                // Update the cart display
+                updateCart();
+                
+                // Close the modal
+                closeItemModal();
+                
+                // Optional: Show a confirmation message
+                const toast = document.createElement('div');
+                toast.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+                toast.textContent = `${quantity}× ${itemName} added to cart`;
+                document.body.appendChild(toast);
+                
+                // Remove the toast after 3 seconds
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            });
+        });
     </script>
-</body>
-</html>
