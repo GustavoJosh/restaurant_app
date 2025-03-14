@@ -14,15 +14,19 @@ from database import db
     #   ]
     # }
 
+# Add to models/menu.py
 class MenuItem(db.Model):
     __tablename__ = 'menu_items'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     price = db.Column(db.Float, nullable=False)
-    is_active = db.Column(db.Boolean, default=True)  # Soft deletion flag
+    is_active = db.Column(db.Boolean, default=True)
     
     # New field for standard modifications
     standard_modifications = db.Column(db.JSON, nullable=True)
+    
+    # New field to categorize dish types (regular, customizable, mixed)
+    dish_type = db.Column(db.String(20), default='regular')
     
     #  Relationship with Recipes
     recipes = db.relationship('Recipe', backref='menu_item', cascade="all, delete-orphan")

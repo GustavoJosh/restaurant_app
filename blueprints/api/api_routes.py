@@ -562,14 +562,23 @@ def dashboard_summary():
             'inventory_alerts': 2
         })
         
-@api_bp.route("/menu-item/<int:id>")
-def get_menu_item(id):
+@api_bp.route('/menu-item/<item_id>')
+def get_menu_item(item_id):
     try:
-        item = MenuItem.query.get_or_404(id)
+        # Try to convert to int if it's a numeric ID
+        try:
+            item_id = int(item_id)
+        except ValueError:
+            # If not numeric, leave as is (could be a string ID)
+            pass
+            
+        menu_item = MenuItem.query.get_or_404(item_id)
         
-        # Get recipe ingredients
+        # Get ingredients for this menu item
+        recipes = Recipe.query.filter_by(menu_item_id=menu_item.id).all()
         ingredients = []
-        for recipe in Recipe.query.filter_by(menu_item_id=item.id).all():
+        
+        for recipe in recipes:
             ingredient = Ingredient.query.get(recipe.ingredient_id)
             if ingredient:
                 ingredients.append({
@@ -579,17 +588,16 @@ def get_menu_item(id):
                     "unit": recipe.unit
                 })
         
-        return jsonify({
-            "id": item.id,
-            "name": item.name,
-            "price": item.price,
+        # Prepare response
+        response = {
+            "id": menu_item.id,
+            "name": menu_item.name,
+            "price": menu_item.price,
             "ingredients": ingredients,
-            "standard_modifications": item.standard_modifications or {
-                "additions": [],
-                "removals": [],
-                "substitutions": []
-            }
-        })
+            "standard_modifications": menu_item.standard_modifications
+        }
+        
+        return jsonify(response)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     

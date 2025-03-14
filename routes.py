@@ -5,6 +5,24 @@ from models.branch import Branch
 from models.stock import Ingredient
 from flask import flash, redirect, url_for
 
+@current_app.route('/debug/menu_items')
+def debug_menu_items():
+    # Get all menu items
+    menu_items = MenuItem.query.all()
+    result = []
+    
+    for item in menu_items:
+        result.append({
+            'id': item.id,
+            'name': item.name,
+            'price': item.price,
+            'dish_type': item.dish_type,
+            'modifications': item.standard_modifications
+        })
+    
+    return jsonify(result)
+
+
 @current_app.route("/test")
 def test_template():
     return render_template("test_waiter.html")   

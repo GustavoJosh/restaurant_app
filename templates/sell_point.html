@@ -21,7 +21,10 @@
                 }
             }
         }
+    
     </script>
+
+    
     <style>
         .gradient-header {
             background: linear-gradient(90deg, #d68c00 0%, #B8860B 100%);
@@ -138,7 +141,21 @@
                 </ul>
             </nav>
         </div>
-
+        <!-- Add this debug code right after the heading section -->
+    <div class="mb-6">
+    <h2 class="text-2xl font-bold text-pily-dark mb-2">Nuestras Gorditas</h2>
+    <p class="text-gray-600">Selecciona tus productos favoritos</p>
+    
+    <!-- Debug info - you can remove this later -->
+    <div style="background: #f0f0f0; padding: 10px; margin: 10px 0; font-family: monospace; font-size: 12px;">
+        <h3>Menu Items:</h3>
+        <ul>
+            {% for item in menu_items %}
+                <li>ID: {{ item.id }} | Name: {{ item.name }} | Type: {{ item.dish_type }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
         <!-- Menu Items Display (Right) -->
         <div class="flex-1 p-6 bg-gray-50 overflow-y-auto">
             <div class="mb-6">
@@ -147,47 +164,82 @@
             </div>
 
             <!-- Menu Items Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {% for item in menu_items %}
-                <div class="menu-item bg-white rounded-xl shadow-md overflow-hidden relative {% if item.name == 'Gordita Personalizada' %}customizable{% endif %}" data-id="{{ item.id }}">
-                    <!-- Hidden quantity badge, shown when item is in cart -->
-                    <div class="quantity-badge hidden" id="badge-{{ item.id }}">0</div>
-                    
-                    <!-- Customizable badge, only for special items -->
-                    {% if item.name == 'Gordita Personalizada' %}
-                    <div class="customizable-badge">Personalizable</div>
-                    {% endif %}
-                    
-                    <!-- Food Image -->
-                    <img src="{{ url_for('static', filename='images/' + item.image_url) if item.image_url else url_for('static', filename='images/default.jpg') }}" 
-                         alt="{{ item.name }}" class="w-full h-40 object-cover" 
-                         onerror="this.src='{{ url_for('static', filename='images/default.jpg') }}'; this.onerror=null;">
-                    
-                    <!-- Item Details -->
-                    <div class="p-4">
-                        <h3 class="text-lg font-bold text-pily-dark">{{ item.name }}</h3>
-                        <p class="text-gray-600 text-sm mb-2 h-10 overflow-hidden">{{ item.description if item.description else 'Deliciosa receta tradicional' }}</p>
-                        <div class="flex justify-between items-center">
-                            <span class="text-pily-orange font-bold">${{ item.price }}</span>
-                            
-                            <!-- For non-customizable items, show quantity controls -->
-                            {% if item.name != 'Gordita Personalizada' %}
-                            <div class="flex items-center">
-                                <button class="decrease-qty bg-red-500 text-white w-8 h-8 rounded-l-full flex items-center justify-center" data-id="{{ item.id }}">-</button>
-                                <span class="px-3 item-qty" id="qty-{{ item.id }}">0</span>
-                                <button class="increase-qty bg-pily-orange text-white w-8 h-8 rounded-r-full flex items-center justify-center" data-id="{{ item.id }}">+</button>
-                            </div>
-                            {% else %}
-                            <!-- For customizable items, show a different button -->
-                            <button class="customize-btn bg-pily-orange text-white px-3 py-1 rounded-full flex items-center" data-id="{{ item.id }}">
-                                <span class="mr-1">✏️</span> Personalizar
-                            </button>
-                            {% endif %}
-                        </div>
-                    </div>
+            <!-- Replace this section in sell_point.html -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    {% for item in menu_items %}
+    {% if item.dish_type != 'mixed' %}
+    <div class="menu-item bg-white rounded-xl shadow-md overflow-hidden relative {% if item.dish_type == 'customizable' %}customizable{% endif %}" data-id="{{ item.id }}">
+        <!-- Hidden quantity badge, shown when item is in cart -->
+        <div class="quantity-badge hidden" id="badge-{{ item.id }}">0</div>
+        
+        <!-- Customizable badge, only for special items -->
+        {% if item.dish_type == 'customizable' %}
+        <div class="customizable-badge">Personalizable</div>
+        {% endif %}
+        
+        <!-- Food Image -->
+        <img src="{{ url_for('static', filename='images/' + item.image_url) if item.image_url else url_for('static', filename='images/default.jpg') }}" 
+             alt="{{ item.name }}" class="w-full h-40 object-cover" 
+             onerror="this.src='{{ url_for('static', filename='images/default.jpg') }}'; this.onerror=null;">
+        
+        <!-- Item Details -->
+        <div class="p-4">
+            <h3 class="text-lg font-bold text-pily-dark">{{ item.name }}</h3>
+            <p class="text-gray-600 text-sm mb-2 h-10 overflow-hidden">{{ item.description if item.description else 'Deliciosa receta tradicional' }}</p>
+            <div class="flex justify-between items-center">
+                <span class="text-pily-orange font-bold">${{ item.price }}</span>
+                
+                <!-- For non-customizable items, show quantity controls -->
+                {% if item.dish_type != 'customizable' %}
+                <div class="flex items-center">
+                    <button class="decrease-qty bg-red-500 text-white w-8 h-8 rounded-l-full flex items-center justify-center" data-id="{{ item.id }}">-</button>
+                    <span class="px-3 item-qty" id="qty-{{ item.id }}">0</span>
+                    <button class="increase-qty bg-pily-orange text-white w-8 h-8 rounded-r-full flex items-center justify-center" data-id="{{ item.id }}">+</button>
                 </div>
-                {% endfor %}
+                {% else %}
+                <!-- For customizable items, show a different button -->
+                <button class="customize-btn bg-pily-orange text-white px-3 py-1 rounded-full flex items-center" data-id="{{ item.id }}">
+                    <span class="mr-1">✏️</span> Personalizar
+                </button>
+                {% endif %}
             </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+    
+    <!-- Add the mixed dish separately -->
+    {% for item in menu_items %}
+    {% if item.dish_type == 'mixed' %}
+    <div class="menu-item bg-white rounded-xl shadow-md overflow-hidden relative" data-id="{{ item.id }}">
+        <!-- Hidden quantity badge, shown when item is in cart -->
+        <div class="quantity-badge hidden" id="badge-{{ item.id }}">0</div>
+        
+        <!-- Customizable badge -->
+        <div class="customizable-badge">Mixta</div>
+        
+        <!-- Food Image -->
+        <img src="{{ url_for('static', filename='images/mixed_gordita.jpg') }}" 
+             alt="Gordita Mixta" class="w-full h-40 object-cover" 
+             onerror="this.src='{{ url_for('static', filename='images/default.jpg') }}'; this.onerror=null;">
+        
+        <!-- Item Details -->
+        <div class="p-4">
+            <h3 class="text-lg font-bold text-pily-dark">{{ item.name }}</h3>
+            <p class="text-gray-600 text-sm mb-2 h-10 overflow-hidden">Deliciosa gordita con dos tipos de carne a tu elección</p>
+            <div class="flex justify-between items-center">
+                <span class="text-pily-orange font-bold">${{ item.price }}</span>
+                
+                <!-- Special button for mixed dish -->
+                <button class="customize-btn bg-pily-orange text-white px-3 py-1 rounded-full flex items-center" data-id="{{ item.id }}">
+                    <span class="mr-1">✏️</span> Personalizar
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+</div>
         </div>
     </main>
 
@@ -816,10 +868,63 @@
             document.getElementById('total-price').textContent = totalPrice;
         }
         
+// Function to collect all modifications for the order
+function collectModifications() {
+    const modifications = [];
+    
+    // Process removals
+    document.querySelectorAll('.removal-checkbox:checked').forEach(checkbox => {
+        modifications.push({
+            type: "remove",
+            ingredient_id: parseInt(checkbox.dataset.id),
+            name: checkbox.dataset.name,
+            price_adjustment: parseFloat(checkbox.dataset.price) || 0
+        });
+    });
+    
+    // Process additions
+    document.querySelectorAll('.addition-checkbox:checked').forEach(checkbox => {
+        const quantitySelect = document.querySelector(`.quantity-select[data-id="${checkbox.dataset.id}"]`);
+        const quantity = quantitySelect ? parseInt(quantitySelect.value) || 1 : 1;
+        
+        modifications.push({
+            type: "add",
+            ingredient_id: parseInt(checkbox.dataset.id),
+            name: checkbox.dataset.name,
+            quantity: quantity,
+            price_adjustment: (parseFloat(checkbox.dataset.price) || 0) * quantity
+        });
+    });
+    
+    // Process substitutions
+    document.querySelectorAll('.substitution-radio:checked').forEach(radio => {
+        if (radio.dataset.replacement) {
+            modifications.push({
+                type: "substitute",
+                ingredient_id: parseInt(radio.dataset.id),
+                replacement_id: parseInt(radio.dataset.replacement),
+                name: radio.dataset.name,
+                price_adjustment: parseFloat(radio.dataset.price) || 0
+            });
+        }
+    });
+    
+    return modifications;
+}
+
+
+
+
         // Function to collect all modifications for the order
-        function collectModifications() {
-            const modifications = [];
-            
+        function collectModificationsWithMeats() {
+    // Get basic modifications
+    const modifications = collectModifications();
+    
+               // Check if this is a mixed dish - use string comparison ("8" == 8 is true, but "8" === 8 is false)
+    const itemId = document.getElementById('modal-item-id').value;
+    if (parseInt(itemId) !== MIXED_DISH_ID) return modifications;
+
+    
             // Process removals
             document.querySelectorAll('.removal-checkbox:checked').forEach(checkbox => {
                 modifications.push({
@@ -963,4 +1068,278 @@
                 }, 3000);
             });
         });
+        // Configuration for mixed dishes
+const MIXED_DISH_ID = 8 ; // This will be the ID of your Mixed Gordita menu item
+
+// Function to enhance the item modal for mixed dishes
+function setupMixedDishModal(itemId) {
+    // Check if this is our mixed dish
+    if (itemId !== MIXED_DISH_ID) return false;
+    
+    // Create the meat selection section if it doesn't exist
+    let meatSection = document.getElementById('meat-selection-section');
+    if (!meatSection) {
+        const modalBody = document.querySelector('#item-modification-modal .p-6');
+        
+        // Create new section for meat selection
+        meatSection = document.createElement('div');
+        meatSection.id = 'meat-selection-section';
+        meatSection.className = 'mb-6';
+        meatSection.innerHTML = `
+            <h4 class="text-lg font-bold text-pily-orange mb-2">Selecciona tus carnes (elige exactamente 2)</h4>
+            <div id="meat-options" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <!-- Meat options will be inserted here -->
+            </div>
+            <p id="meat-selection-error" class="text-red-500 text-sm mt-2 hidden">Por favor selecciona exactamente 2 tipos de carne.</p>
+        `;
+        
+        // Insert the meat section after the base ingredients section
+        const ingredientsSection = document.getElementById('modal-ingredients').parentNode;
+        ingredientsSection.parentNode.insertBefore(meatSection, ingredientsSection.nextSibling);
+    }
+    
+    // Populate meat options
+    const meatOptions = document.getElementById('meat-options');
+    meatOptions.innerHTML = '';
+    
+    // Get meat options from your API or use hardcoded options for now
+    const meatTypes = [
+        { id: 1, name: "PapasConChorizo", price: 20 },
+        { id: 2, name: "MasaGordita", price: 20 },
+        { id: 3, name: "ChicharronSalsaVerde", price: 20 },
+        { id: 4, name: "Picadillo", price: 20 },
+        { id: 5, name: "Nopales", price: 20 }, // Premium meat with extra cost
+        { id: 6, name: "Carne de pata", price: 20 } // Premium meat with extra cost
+    ];
+    
+    // Add each meat option as a checkbox
+    meatTypes.forEach(meat => {
+        const div = document.createElement('div');
+        div.className = 'flex items-center space-x-2';
+        div.innerHTML = `
+            <input type="checkbox" id="meat-${meat.id}" 
+                   class="meat-checkbox rounded border-gray-300 text-pily-orange focus:ring-pily-orange"
+                   data-id="${meat.id}" data-price="${meat.price || 0}" data-name="${meat.name}">
+            <label for="meat-${meat.id}" class="text-sm">
+                ${meat.name} ${meat.price > 0 ? `(+$${meat.price})` : ''}
+            </label>
+        `;
+        meatOptions.appendChild(div);
+    });
+    
+    return true;
+}
+
+// Enhance the existing updateTotalPrice function to account for meat selections
+function updateTotalPriceWithMeats() {
+    // Call the original updateTotalPrice function first
+    updateTotalPrice();
+    
+    // Check if this is a mixed dish
+    const itemId = document.getElementById('modal-item-id').value;
+    if (itemId !== MIXED_DISH_ID) return;
+    
+    // Add prices from selected meats
+    let totalEl = document.getElementById('total-price');
+    let currentTotal = parseFloat(totalEl.textContent);
+    const quantity = parseInt(document.getElementById('item-quantity').value) || 1;
+    
+    document.querySelectorAll('.meat-checkbox:checked').forEach(checkbox => {
+        const price = parseFloat(checkbox.dataset.price) || 0;
+        currentTotal += price;
+    });
+    
+    totalEl.textContent = (currentTotal * quantity).toFixed(2);
+}
+
+// Modify the collectModifications function to include meat selections
+function collectModificationsWithMeats() {
+    // Get basic modifications
+    const modifications = collectModifications();
+    
+    // Check if this is a mixed dish
+    const itemId = document.getElementById('modal-item-id').value;
+    if (itemId !== 8) return modifications;
+    
+    // Add meat selections as additions
+    document.querySelectorAll('.meat-checkbox:checked').forEach(checkbox => {
+        modifications.push({
+            type: "meat_selection", // Custom type for meats
+            ingredient_id: parseInt(checkbox.dataset.id),
+            name: checkbox.dataset.name,
+            quantity: 1,
+            price_adjustment: parseFloat(checkbox.dataset.price) || 0
+        });
+    });
+    
+    return modifications;
+}
+
+// In your JavaScript, modify the validateMixedDishSelection function:
+function validateMixedDishSelection() {
+    const itemId = document.getElementById('modal-item-id').value;
+    // Use strict equality with string conversion to ensure proper comparison
+    if (String(itemId) !== String(MIXED_DISH_ID)) return true;
+    
+    const selectedMeats = document.querySelectorAll('.meat-checkbox:checked');
+    const isValid = selectedMeats.length === 2;
+    
+    const errorMsg = document.getElementById('meat-selection-error');
+    errorMsg.classList.toggle('hidden', isValid);
+    
+    return isValid;
+}
+
+// Same for other functions that check MIXED_DISH_ID
+
+// Modify the original openItemModal function
+const originalOpenItemModal = openItemModal;
+openItemModal = function(itemId) {
+    // Call the original function
+    originalOpenItemModal(itemId);
+    
+    // Add our custom setup for mixed dishes
+    setupMixedDishModal(itemId);
+    
+    // Add meat selection change handlers
+    document.querySelectorAll('.meat-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+            updateTotalPriceWithMeats();
+            validateMixedDishSelection();
+            
+            // Limit to exactly 2 selections
+            const checkboxes = document.querySelectorAll('.meat-checkbox:checked');
+            if (checkboxes.length > 2) {
+                // Uncheck the oldest selection if more than 2 are selected
+                checkboxes[0].checked = false;
+                updateTotalPriceWithMeats();
+            }
+        });
+    });
+};
+
+// Update the add-to-order button click handler
+document.addEventListener('DOMContentLoaded', function() {
+    const originalAddToOrderBtn = document.getElementById('add-to-order');
+    
+    originalAddToOrderBtn.onclick = function(event) {
+        // For mixed dishes, validate meat selection
+        const itemId = document.getElementById('modal-item-id').value;
+        
+        if (String(itemId) === String(MIXED_DISH_ID)) {
+            if (!validateMixedDishSelection()) {
+                // Prevent order if validation fails
+                return false;
+            }
+            
+            // Use our enhanced modifications collector
+            const modifications = collectModificationsWithMeats();
+            
+            // Update the item name to show it's a mixed dish
+            const selectedMeats = Array.from(document.querySelectorAll('.meat-checkbox:checked'))
+                .map(checkbox => checkbox.dataset.name);
+            
+            const itemName = document.getElementById('modal-item-name').textContent;
+            document.getElementById('modal-item-name').textContent = 
+                `${itemName} (${selectedMeats.join(' y ')})`;
+                
+            // Get the menu item details
+            const itemPrice = parseFloat(document.getElementById('modal-item-price').value);
+            
+            // Calculate the modified price with meat selections
+            let modifiedPrice = itemPrice;
+            modifications.forEach(mod => {
+                modifiedPrice += mod.price_adjustment || 0;
+            });
+            
+            // Add to cart
+            if (!cart[itemId]) {
+                cart[itemId] = { 
+                    name: document.getElementById('modal-item-name').textContent, 
+                    price: modifiedPrice,
+                    quantity: 0,
+                    modifications: modifications,
+                    special_instructions: document.getElementById('special-instructions').value.trim()
+                };
+            }
+            
+            // Update the item
+            cart[itemId].quantity += parseInt(document.getElementById('item-quantity').value) || 1;
+            
+            // Update the cart display
+            updateCart();
+            
+            // Close the modal
+            closeItemModal();
+            
+            // Show confirmation message
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+            toast.textContent = `${cart[itemId].quantity}× ${cart[itemId].name} added to cart`;
+            document.body.appendChild(toast);
+            
+            // Remove toast after 3 seconds
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+            
+            return false; // Prevent default behavior
+        }
+        
+        // For non-mixed dishes, use the existing code
+        const itemId2 = document.getElementById('modal-item-id').value;
+        const quantity = parseInt(document.getElementById('item-quantity').value) || 1;
+        const specialInstructions = document.getElementById('special-instructions').value.trim();
+        const modifications = collectModifications();
+        
+        // Get the menu item details
+        const itemName = document.getElementById('modal-item-name').textContent;
+        const itemPrice = parseFloat(document.getElementById('modal-item-price').value);
+        
+        // Calculate the modified price
+        let modifiedPrice = itemPrice;
+        modifications.forEach(mod => {
+            modifiedPrice += mod.price_adjustment || 0;
+        });
+        
+        // Add to cart
+        if (!cart[itemId2]) {
+            cart[itemId2] = { 
+                name: itemName, 
+                price: modifiedPrice,
+                quantity: 0,
+                modifications: [],
+                special_instructions: ''
+            };
+        }
+        
+        // Update the item
+        cart[itemId2].quantity += quantity;
+        cart[itemId2].modifications = modifications;
+        cart[itemId2].special_instructions = specialInstructions;
+        
+        // Update the UI
+        const quantityElement = document.getElementById(`qty-${itemId2}`);
+        if (quantityElement) {
+            quantityElement.textContent = cart[itemId2].quantity;
+        }
+        
+        // Update the cart display
+        updateCart();
+        
+        // Close the modal
+        closeItemModal();
+        
+        // Optional: Show a confirmation message
+        const toast = document.createElement('div');
+        toast.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+        toast.textContent = `${quantity}× ${itemName} added to cart`;
+        document.body.appendChild(toast);
+        
+        // Remove the toast after 3 seconds
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    };
+});
     </script>
