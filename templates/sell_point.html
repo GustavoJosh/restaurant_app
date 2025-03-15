@@ -128,8 +128,8 @@
                     
                     <!-- Food Image -->
                     <img src="{{ url_for('static', filename='images/' + item.image_url) if item.image_url else url_for('static', filename='images/default.jpg') }}" 
-                         alt="{{ item.name }}" class="w-full h-40 object-cover" 
-                         onerror="this.src='{{ url_for('static', filename='images/default.jpg') }}'; this.onerror=null;">
+                         alt="{{ item.name }}" class="w-full h-40 object-cover">
+                         
                     
                     <!-- Item Details -->
                     <div class="p-4">
