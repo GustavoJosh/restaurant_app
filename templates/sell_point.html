@@ -21,79 +21,20 @@
                 }
             }
         }
-    
     </script>
+    <!-- Add custom CSS reference -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 
-    
-    <style>
-        .gradient-header {
-            background: linear-gradient(90deg, #d68c00 0%, #B8860B 100%);
-        }
-        .menu-item {
-            transition: all 0.3s ease;
-        }
-        .menu-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-        .menu-item.selected {
-            border: 2px solid #d68c00;
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-        .cart-item-animation {
-            animation: fadeIn 0.3s ease-in-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateX(20px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-        .quantity-badge {
-            position: absolute;
-            top: -10px;
-            right: -10px;
-            background-color: #d68c00;
-            color: white;
-            border-radius: 50%;
-            width: 25px;
-            height: 25px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-        }
-        .sidebar-category.active {
-            background-color: #FFF8E1;
-            color: #d68c00;
-            border-left: 4px solid #d68c00;
-        }
-        .cart-modal {
-            animation: slideIn 0.3s ease-out;
-        }
-        @keyframes slideIn {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        /* Custom badge for customizable items */
-        .customizable-badge {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background-color: #d68c00;
-            color: white;
-            border-radius: 4px;
-            padding: 2px 8px;
-            font-size: 0.75rem;
-            font-weight: bold;
-            z-index: 5;
-        }
-    </style>
 </head>
 <body class="bg-white min-h-screen flex flex-col">
-    <!-- Top Header Bar -->
     <header class="gradient-header text-white shadow-lg py-4">
         <div class="container mx-auto px-4 flex justify-between items-center">
-            <h1 class="text-3xl font-bold">Doña Pily</h1>
+            <div class="flex items-center">
+                <h1 class="text-3xl font-bold">Doña Pily</h1>
+                <div class="ml-4 text-white bg-white/20 px-3 py-1 rounded-full text-sm" id="current-plate-indicator">
+                    Platillo 1
+                </div>
+            </div>
             <div class="relative">
                 <button id="view-cart-btn" class="bg-white text-pily-orange px-4 py-2 rounded-full hover:bg-gray-100 transition duration-300 flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -119,127 +60,102 @@
             <nav class="py-4">
                 <ul>
                     <li>
-                        <a href="#" class="sidebar-category active flex items-center py-3 px-6 text-lg font-medium hover:bg-pily-light transition duration-150">
+                        <a href="#" class="sidebar-category active flex items-center py-3 px-6 text-lg font-medium hover:bg-pily-light transition duration-150" data-category="all">
+                            <span class="mr-3">🍽️</span> Todos
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="sidebar-category flex items-center py-3 px-6 text-lg font-medium hover:bg-pily-light transition duration-150" data-category="regular">
                             <span class="mr-3">🥙</span> Gorditas
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="sidebar-category flex items-center py-3 px-6 text-lg font-medium hover:bg-pily-light transition duration-150">
+                        <a href="#" class="sidebar-category flex items-center py-3 px-6 text-lg font-medium hover:bg-pily-light transition duration-150" data-category="extra">
+                            <span class="mr-3">➕</span> Extras
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="sidebar-category flex items-center py-3 px-6 text-lg font-medium hover:bg-pily-light transition duration-150" data-category="bebidas">
                             <span class="mr-3">🥤</span> Bebidas
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="sidebar-category flex items-center py-3 px-6 text-lg font-medium hover:bg-pily-light transition duration-150">
+                        <a href="#" class="sidebar-category flex items-center py-3 px-6 text-lg font-medium hover:bg-pily-light transition duration-150" data-category="postres">
                             <span class="mr-3">🍮</span> Postres
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="sidebar-category flex items-center py-3 px-6 text-lg font-medium hover:bg-pily-light transition duration-150">
+                        <a href="#" class="sidebar-category flex items-center py-3 px-6 text-lg font-medium hover:bg-pily-light transition duration-150" data-category="complementos">
                             <span class="mr-3">🌮</span> Complementos
                         </a>
                     </li>
                 </ul>
             </nav>
         </div>
-        <!-- Add this debug code right after the heading section -->
-    <div class="mb-6">
-    <h2 class="text-2xl font-bold text-pily-dark mb-2">Nuestras Gorditas</h2>
-    <p class="text-gray-600">Selecciona tus productos favoritos</p>
-    
-    <!-- Debug info - you can remove this later -->
-    <div style="background: #f0f0f0; padding: 10px; margin: 10px 0; font-family: monospace; font-size: 12px;">
-        <h3>Menu Items:</h3>
-        <ul>
-            {% for item in menu_items %}
-                <li>ID: {{ item.id }} | Name: {{ item.name }} | Type: {{ item.dish_type }}</li>
-            {% endfor %}
-        </ul>
-    </div>
-</div>
+
         <!-- Menu Items Display (Right) -->
         <div class="flex-1 p-6 bg-gray-50 overflow-y-auto">
             <div class="mb-6">
-                <h2 class="text-2xl font-bold text-pily-dark mb-2">Nuestras Gorditas</h2>
+                <h2 class="text-2xl font-bold text-pily-dark mb-2" id="current-category-title">Todos los Productos</h2>
                 <p class="text-gray-600">Selecciona tus productos favoritos</p>
+                
+                <!-- Filter buttons -->
+                <div class="flex flex-wrap gap-2 mt-4">
+                    <button class="filter-btn active px-3 py-1 bg-gray-200 rounded-full text-sm font-medium transition-colors" data-filter="all">Todos</button>
+                    <button class="filter-btn px-3 py-1 bg-gray-200 rounded-full text-sm font-medium transition-colors" data-filter="regular">Regular</button>
+                    <button class="filter-btn px-3 py-1 bg-gray-200 rounded-full text-sm font-medium transition-colors" data-filter="customizable">Personalizable</button>
+                    <button class="filter-btn px-3 py-1 bg-gray-200 rounded-full text-sm font-medium transition-colors" data-filter="mixed">Mixta</button>
+                    <button class="filter-btn px-3 py-1 bg-gray-200 rounded-full text-sm font-medium transition-colors" data-filter="extra">Extras</button>
+                </div>
             </div>
 
             <!-- Menu Items Grid -->
-            <!-- Replace this section in sell_point.html -->
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-    {% for item in menu_items %}
-    {% if item.dish_type != 'mixed' %}
-    <div class="menu-item bg-white rounded-xl shadow-md overflow-hidden relative {% if item.dish_type == 'customizable' %}customizable{% endif %}" data-id="{{ item.id }}">
-        <!-- Hidden quantity badge, shown when item is in cart -->
-        <div class="quantity-badge hidden" id="badge-{{ item.id }}">0</div>
-        
-        <!-- Customizable badge, only for special items -->
-        {% if item.dish_type == 'customizable' %}
-        <div class="customizable-badge">Personalizable</div>
-        {% endif %}
-        
-        <!-- Food Image -->
-        <img src="{{ url_for('static', filename='images/' + item.image_url) if item.image_url else url_for('static', filename='images/default.jpg') }}" 
-             alt="{{ item.name }}" class="w-full h-40 object-cover" 
-             onerror="this.src='{{ url_for('static', filename='images/default.jpg') }}'; this.onerror=null;">
-        
-        <!-- Item Details -->
-        <div class="p-4">
-            <h3 class="text-lg font-bold text-pily-dark">{{ item.name }}</h3>
-            <p class="text-gray-600 text-sm mb-2 h-10 overflow-hidden">{{ item.description if item.description else 'Deliciosa receta tradicional' }}</p>
-            <div class="flex justify-between items-center">
-                <span class="text-pily-orange font-bold">${{ item.price }}</span>
-                
-                <!-- For non-customizable items, show quantity controls -->
-                {% if item.dish_type != 'customizable' %}
-                <div class="flex items-center">
-                    <button class="decrease-qty bg-red-500 text-white w-8 h-8 rounded-l-full flex items-center justify-center" data-id="{{ item.id }}">-</button>
-                    <span class="px-3 item-qty" id="qty-{{ item.id }}">0</span>
-                    <button class="increase-qty bg-pily-orange text-white w-8 h-8 rounded-r-full flex items-center justify-center" data-id="{{ item.id }}">+</button>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="menu-grid">
+                {% for item in menu_items %}
+                <div class="menu-item bg-white rounded-xl shadow-md overflow-hidden relative {% if item.dish_type == 'customizable' %}customizable{% endif %}" 
+                     data-id="{{ item.id }}" data-type="{{ item.dish_type }}">
+                    <!-- Hidden quantity badge, shown when item is in cart -->
+                    <div class="quantity-badge hidden" id="badge-{{ item.id }}">0</div>
+                    
+                    <!-- Badge based on dish type -->
+                    {% if item.dish_type == 'customizable' %}
+                    <div class="customizable-badge">Personalizable</div>
+                    {% elif item.dish_type == 'mixed' %}
+                    <div class="customizable-badge">Mixta</div>
+                    {% elif item.dish_type == 'extra' %}
+                    <div class="extra-badge">Extra</div>
+                    {% endif %}
+                    
+                    <!-- Food Image -->
+                    <img src="{{ url_for('static', filename='images/' + item.image_url) if item.image_url else url_for('static', filename='images/default.jpg') }}" 
+                         alt="{{ item.name }}" class="w-full h-40 object-cover" 
+                         onerror="this.src='{{ url_for('static', filename='images/default.jpg') }}'; this.onerror=null;">
+                    
+                    <!-- Item Details -->
+                    <div class="p-4">
+                        <h3 class="text-lg font-bold text-pily-dark">{{ item.name }}</h3>
+                        <p class="text-gray-600 text-sm mb-2 h-10 overflow-hidden">{{ item.description if item.description else 'Deliciosa receta tradicional' }}</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-pily-orange font-bold">${{ item.price }}</span>
+                            
+                            <!-- For non-customizable items, show quantity controls -->
+                            {% if item.dish_type != 'customizable' and item.dish_type != 'mixed' %}
+                            <div class="flex items-center">
+                                <button class="decrease-qty bg-red-500 text-white w-8 h-8 rounded-l-full flex items-center justify-center" data-id="{{ item.id }}">-</button>
+                                <span class="px-3 item-qty" id="qty-{{ item.id }}">0</span>
+                                <button class="increase-qty bg-pily-orange text-white w-8 h-8 rounded-r-full flex items-center justify-center" data-id="{{ item.id }}">+</button>
+                            </div>
+                            {% else %}
+                            <!-- For customizable items, show a different button -->
+                            <button class="customize-btn bg-pily-orange text-white px-3 py-1 rounded-full flex items-center" data-id="{{ item.id }}">
+                                <span class="mr-1">✏️</span> Personalizar
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
-                {% else %}
-                <!-- For customizable items, show a different button -->
-                <button class="customize-btn bg-pily-orange text-white px-3 py-1 rounded-full flex items-center" data-id="{{ item.id }}">
-                    <span class="mr-1">✏️</span> Personalizar
-                </button>
-                {% endif %}
+                {% endfor %}
             </div>
-        </div>
-    </div>
-    {% endif %}
-    {% endfor %}
-    
-    <!-- Add the mixed dish separately -->
-    {% for item in menu_items %}
-    {% if item.dish_type == 'mixed' %}
-    <div class="menu-item bg-white rounded-xl shadow-md overflow-hidden relative" data-id="{{ item.id }}">
-        <!-- Hidden quantity badge, shown when item is in cart -->
-        <div class="quantity-badge hidden" id="badge-{{ item.id }}">0</div>
-        
-        <!-- Customizable badge -->
-        <div class="customizable-badge">Mixta</div>
-        
-        <!-- Food Image -->
-        <img src="{{ url_for('static', filename='images/mixed_gordita.jpg') }}" 
-             alt="Gordita Mixta" class="w-full h-40 object-cover" 
-             onerror="this.src='{{ url_for('static', filename='images/default.jpg') }}'; this.onerror=null;">
-        
-        <!-- Item Details -->
-        <div class="p-4">
-            <h3 class="text-lg font-bold text-pily-dark">{{ item.name }}</h3>
-            <p class="text-gray-600 text-sm mb-2 h-10 overflow-hidden">Deliciosa gordita con dos tipos de carne a tu elección</p>
-            <div class="flex justify-between items-center">
-                <span class="text-pily-orange font-bold">${{ item.price }}</span>
-                
-                <!-- Special button for mixed dish -->
-                <button class="customize-btn bg-pily-orange text-white px-3 py-1 rounded-full flex items-center" data-id="{{ item.id }}">
-                    <span class="mr-1">✏️</span> Personalizar
-                </button>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-    {% endfor %}
-</div>
         </div>
     </main>
 
@@ -252,7 +168,6 @@
         </button>
         <span id="mobile-cart-counter" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm hidden">0</span>
     </div>
-
     <!-- Cart Modal -->
     <div id="cart-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-lg w-full max-w-2xl cart-modal">
@@ -299,6 +214,17 @@
                 </div>
             </div>
             
+
+            <!-- PLATILLO SUMMARY -->
+            <div class="p-4 bg-gray-100 border-t border-gray-200">
+                <button id="add-new-plate" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                    </svg>
+                    Agregar Nuevo Platillo
+                </button>
+            </div>
+
             <!-- Checkout Section -->
             <div class="p-4 bg-gray-100 rounded-b-lg">
                 <div class="mb-4">
@@ -430,916 +356,112 @@
         </div>
     </div>
 
+    <!-- NEW: Extras Modal -->
+    <div id="extras-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg w-full max-w-2xl extras-modal">
+            <!-- Extras Header -->
+            <div class="gradient-header text-white p-4 rounded-t-lg flex justify-between items-center">
+                <h2 class="text-xl font-bold flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                    </svg>
+                    Añadir Extras
+                </h2>
+                <button id="close-extras" class="text-white hover:text-gray-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Extras Items -->
+            <div class="p-6 max-h-96 overflow-y-auto">
+                <p class="text-gray-600 mb-4">Selecciona extras para añadir a tu orden:</p>
+                <div id="extras-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Extras will be populated here by JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="p-4 bg-gray-100 rounded-b-lg">
+                <button id="close-extras-continue" class="w-full bg-pily-orange hover:bg-pily-gold text-white font-bold py-3 px-4 rounded-lg transition duration-300">
+                    Continuar Ordenando
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- SCRIPT SECTION -->
+    <!-- Add JavaScript references in the right order -->
+    <script src="{{ url_for('static', filename='js/cart.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/menu.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/modals.js') }}"></script>
+    
+    <!-- Additional UI functionality -->
     <script>
-        let cart = {};
+        // Open cart modal
+        document.getElementById('view-cart-btn').addEventListener('click', function() {
+            document.getElementById('cart-modal').classList.remove('hidden');
+        });
         
-        // Function to update the cart display
-        function updateCart() {
-            let cartList = document.getElementById("cart-items");
-            let emptyCartMessage = document.getElementById("empty-cart-message");
-            cartList.innerHTML = "";
-            
-            let subtotal = 0;
-            let totalItems = 0;
-            let hasItems = Object.keys(cart).length > 0;
-            
-            emptyCartMessage.style.display = hasItems ? "none" : "block";
-            
-            Object.keys(cart).forEach(itemId => {
-                let item = cart[itemId];
-                let itemTotal = item.price * item.quantity;
-                subtotal += itemTotal;
-                totalItems += item.quantity;
+        // Mobile cart button
+        document.getElementById('mobile-cart-btn').addEventListener('click', function() {
+            document.getElementById('cart-modal').classList.remove('hidden');
+        });
+        
+        // Close cart modal
+        document.getElementById('close-cart').addEventListener('click', function() {
+            document.getElementById('cart-modal').classList.add('hidden');
+        });
+        
+        // Continue shopping button
+        document.getElementById('continue-shopping').addEventListener('click', function() {
+            document.getElementById('cart-modal').classList.add('hidden');
+        });
+        
+        // Add click handlers for sidebar category buttons
+        document.querySelectorAll('.sidebar-category').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
                 
-                let li = document.createElement("li");
-                li.className = "flex justify-between items-start border-b border-gray-200 pb-3 cart-item-animation";
-                
-                // Generate modification text if any
-                let modificationsHtml = '';
-                if (item.modifications && item.modifications.length > 0) {
-                    modificationsHtml = '<div class="text-xs text-gray-400 mt-1">';
-                    item.modifications.forEach(mod => {
-                        let modText = '';
-                        switch(mod.type) {
-                            case 'add':
-                                modText = `+ ${mod.name}`;
-                                break;
-                            case 'remove':
-                                modText = `- ${mod.name}`;
-                                break;
-                            case 'substitute':
-                                modText = `${mod.name}`;
-                                break;
-                        }
-                        modificationsHtml += `<div>${modText}</div>`;
-                    });
-                    modificationsHtml += '</div>';
-                }
-                
-                // Add special instructions if any
-                let instructionsHtml = '';
-                if (item.special_instructions) {
-                    instructionsHtml = `<div class="text-xs italic text-gray-500 mt-1">"${item.special_instructions}"</div>`;
-                }
-                
-                li.innerHTML = `
-                    <div class="flex-1">
-                        <div class="font-medium">${item.name}</div>
-                        <div class="text-sm text-gray-500">$${item.price.toFixed(2)} × ${item.quantity}</div>
-                        ${modificationsHtml}
-                        ${instructionsHtml}
-                    </div>
-                    <div class="font-medium text-pily-dark">$${itemTotal.toFixed(2)}</div>
-                    <button class="remove-item ml-2 text-red-500 hover:text-red-700" data-id="${itemId}">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
-                        </svg>
-                    </button>
-                `;
-                cartList.appendChild(li);
-                
-                // Add click event for remove button
-                li.querySelector(".remove-item").addEventListener("click", function() {
-                    let id = this.getAttribute("data-id");
-                    delete cart[id];
-                    document.getElementById(`qty-${id}`).textContent = "0";
-                    document.getElementById(`badge-${id}`).classList.add("hidden");
-                    document.querySelector(`.menu-item[data-id="${id}"]`).classList.remove("selected");
-                    updateCart();
+                // Update active state
+                document.querySelectorAll('.sidebar-category').forEach(btn => {
+                    btn.classList.remove('active');
                 });
-            });
-            
-            // Calculate tax and total
-            let tax = subtotal * 0.16; // 16% tax
-            let total = subtotal + tax;
-            
-            // Update the display
-            document.getElementById("subtotal").textContent = `$${subtotal.toFixed(2)}`;
-            document.getElementById("tax").textContent = `$${tax.toFixed(2)}`;
-            document.getElementById("total-cost").textContent = `$${total.toFixed(2)}`;
-            
-            // Enable/disable checkout button
-            document.getElementById("submit-cart").disabled = !hasItems;
-            
-            // Update quantity badges and cart counter
-            Object.keys(cart).forEach(itemId => {
-                let badge = document.getElementById(`badge-${itemId}`);
-                badge.textContent = cart[itemId].quantity;
-                badge.classList.remove("hidden");
-                document.querySelector(`.menu-item[data-id="${itemId}"]`).classList.add("selected");
-            });
-            
-            // Update cart counter
-            const cartCounter = document.getElementById("cart-counter");
-            const mobileCartCounter = document.getElementById("mobile-cart-counter");
-            
-            if (totalItems > 0) {
-                cartCounter.textContent = totalItems;
-                cartCounter.classList.remove("hidden");
-                mobileCartCounter.textContent = totalItems;
-                mobileCartCounter.classList.remove("hidden");
-            } else {
-                cartCounter.classList.add("hidden");
-                mobileCartCounter.classList.add("hidden");
-            }
-        }
-        
-        // Add event listeners for quantity buttons
-        document.querySelectorAll(".increase-qty").forEach(button => {
-            button.addEventListener("click", () => {
-                let itemId = button.getAttribute("data-id");
-                let quantityElement = document.getElementById(`qty-${itemId}`);
-                let menuItem = button.closest(".menu-item");
-                let itemName = menuItem.querySelector("h3").textContent;
-                let itemPrice = parseFloat(menuItem.querySelector(".text-pily-orange").textContent.replace("$", ""));
+                this.classList.add('active');
                 
-                if (!cart[itemId]) {
-                    cart[itemId] = { name: itemName, price: itemPrice, quantity: 0 };
-                }
+                // Set current category
+                currentCategory = this.getAttribute('data-category');
                 
-                cart[itemId].quantity++;
-                quantityElement.textContent = cart[itemId].quantity;
-                updateCart();
+                // Update menu display
+                updateMenuDisplay();
             });
         });
         
-        document.querySelectorAll(".decrease-qty").forEach(button => {
-            button.addEventListener("click", () => {
-                let itemId = button.getAttribute("data-id");
-                let quantityElement = document.getElementById(`qty-${itemId}`);
+        // Add click handlers for filter buttons
+        document.querySelectorAll('.filter-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                // Update active state
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                this.classList.add('active');
                 
-                if (cart[itemId] && cart[itemId].quantity > 0) {
-                    cart[itemId].quantity--;
-                    if (cart[itemId].quantity === 0) {
-                        delete cart[itemId];
-                        document.querySelector(`.menu-item[data-id="${itemId}"]`).classList.remove("selected");
-                        document.getElementById(`badge-${itemId}`).classList.add("hidden");
-                    }
-                }
+                // Set filter type
+                filterType = this.getAttribute('data-filter');
                 
-                quantityElement.textContent = cart[itemId] ? cart[itemId].quantity : 0;
-                updateCart();
+                // Update menu display
+                updateMenuDisplay();
             });
         });
         
-        // Add event listeners for customizable items
-        document.querySelectorAll(".customize-btn").forEach(button => {
-            button.addEventListener("click", () => {
-                let itemId = button.getAttribute("data-id");
+        // Click handler for customize buttons
+        document.querySelectorAll('.customize-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const itemId = this.getAttribute('data-id');
                 openItemModal(itemId);
             });
         });
-        
-        // Cart modal controls
-        document.getElementById("view-cart-btn").addEventListener("click", () => {
-            document.getElementById("cart-modal").classList.remove("hidden");
-        });
-        
-        document.getElementById("mobile-cart-btn").addEventListener("click", () => {
-            document.getElementById("cart-modal").classList.remove("hidden");
-        });
-        
-        document.getElementById("close-cart").addEventListener("click", () => {
-            document.getElementById("cart-modal").classList.add("hidden");
-        });
-        
-        document.getElementById("continue-shopping").addEventListener("click", () => {
-            document.getElementById("cart-modal").classList.add("hidden");
-        });
-        
-        // Submit order
-        document.getElementById("submit-cart").addEventListener("click", () => {
-            if (Object.keys(cart).length === 0) {
-                alert("No hay productos en tu orden!");
-                return;
-            }
-            
-            let tableNumber = document.getElementById("table-number").value;
-            
-            // Transform cart object to array of items with modifications
-            const items = Object.keys(cart).map(id => {
-                const item = cart[id];
-                return {
-                    menu_item_id: parseInt(id),
-                    quantity: item.quantity,
-                    modifications: item.modifications || [],
-                    special_instructions: item.special_instructions || ""
-                };
-            });
-            
-            fetch("/api/order", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    table_number: tableNumber,
-                    branch_id: "1", // Default branch ID
-                    items: items
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Hide cart modal
-                document.getElementById("cart-modal").classList.add("hidden");
-                
-                // Show success modal
-                document.getElementById("modal-order-number").textContent = `Orden #${data.order_id}`;
-                document.getElementById("success-modal").classList.remove("hidden");
-                
-                // Reset cart
-                cart = {};
-                document.querySelectorAll(".item-qty").forEach(span => span.textContent = "0");
-                document.querySelectorAll(".quantity-badge").forEach(badge => badge.classList.add("hidden"));
-                document.querySelectorAll(".menu-item").forEach(item => item.classList.remove("selected"));
-                updateCart();
-            })
-            .catch(error => {
-                console.error("Error:", error);
-                alert("Hubo un error al procesar tu orden. Por favor intenta de nuevo.");
-            });
-        });
-        
-        // Close success modal button
-        document.getElementById("close-success").addEventListener("click", () => {
-            document.getElementById("success-modal").classList.add("hidden");
-        });
-        
-        // Category sidebar navigation
-        document.querySelectorAll(".sidebar-category").forEach(category => {
-            category.addEventListener("click", function(e) {
-                e.preventDefault();
-                document.querySelectorAll(".sidebar-category").forEach(item => {
-                    item.classList.remove("active");
-                });
-                this.classList.add("active");
-                // In a real app, you would filter menu items by category here
-            });
-        });
-        
-        // Initialize cart display
-        updateCart();
-        
-        // ===== MODAL FUNCTIONALITY =====
-        // Data structure for current modifications
-        let currentModifications = [];
-        let basePrice = 0;
-        let baseIngredients = [];
-    
-        // Function to open modal with menu item details
-        function openItemModal(itemId) {
-            // Reset modifications
-            currentModifications = [];
-            
-            // Get menu item details via AJAX
-            fetch(`/api/menu-item/${itemId}`)
-                .then(response => response.json())
-                .then(item => {
-                    // Set item details
-                    document.getElementById('modal-item-name').textContent = item.name;
-                    document.getElementById('modal-item-id').value = item.id;
-                    document.getElementById('modal-item-price').value = item.price;
-                    basePrice = item.price;
-                    
-                    // Set base ingredients
-                    const ingredientsContainer = document.getElementById('modal-ingredients');
-                    ingredientsContainer.innerHTML = '';
-                    baseIngredients = item.ingredients || [];
-                    
-                    baseIngredients.forEach(ingredient => {
-                        const badge = document.createElement('span');
-                        badge.className = 'bg-pily-light text-pily-orange px-3 py-1 rounded-full text-sm';
-                        badge.textContent = ingredient.name;
-                        ingredientsContainer.appendChild(badge);
-                    });
-                    
-                    // Set removal options
-                    const removalContainer = document.getElementById('removal-options');
-                    removalContainer.innerHTML = '';
-                    
-                    const removals = item.standard_modifications?.removals || [];
-                    if (removals.length > 0) {
-                        removals.forEach(removal => {
-                            const div = document.createElement('div');
-                            div.className = 'flex items-center space-x-2';
-                            div.innerHTML = `
-                                <input type="checkbox" id="remove-${removal.ingredient_id}" 
-                                       class="removal-checkbox rounded border-gray-300 text-pily-orange focus:ring-pily-orange"
-                                       data-id="${removal.ingredient_id}" data-price="${removal.price || 0}" data-name="${removal.name}">
-                                <label for="remove-${removal.ingredient_id}" class="text-sm">${removal.name}</label>
-                            `;
-                            removalContainer.appendChild(div);
-                        });
-                        document.getElementById('removals-section').classList.remove('hidden');
-                    } else {
-                        document.getElementById('removals-section').classList.add('hidden');
-                    }
-                    
-                    // Set addition options
-                    const additionContainer = document.getElementById('addition-options');
-                    additionContainer.innerHTML = '';
-                    
-                    const additions = item.standard_modifications?.additions || [];
-                    if (additions.length > 0) {
-                        additions.forEach(addition => {
-                            const div = document.createElement('div');
-                            div.className = 'flex items-center space-x-2';
-                            div.innerHTML = `
-                                <input type="checkbox" id="add-${addition.ingredient_id}" 
-                                       class="addition-checkbox rounded border-gray-300 text-pily-orange focus:ring-pily-orange"
-                                       data-id="${addition.ingredient_id}" data-price="${addition.price || 0}" data-name="${addition.name}">
-                                <label for="add-${addition.ingredient_id}" class="text-sm">${addition.name} (+$${addition.price})</label>
-                                <select class="quantity-select ml-2 text-sm rounded border-gray-300 hidden" data-id="${addition.ingredient_id}">
-                                    <option value="1">1×</option>
-                                    <option value="2">2×</option>
-                                    <option value="3">3×</option>
-                                </select>
-                            `;
-                            additionContainer.appendChild(div);
-                        });
-                        document.getElementById('additions-section').classList.remove('hidden');
-                    } else {
-                        document.getElementById('additions-section').classList.add('hidden');
-                    }
-                    
-                    // Set substitution options
-                    const substitutionContainer = document.getElementById('substitution-options');
-                    substitutionContainer.innerHTML = '';
-                    
-                    const substitutions = item.standard_modifications?.substitutions || [];
-                    if (substitutions.length > 0) {
-                        // Group substitutions by original ingredient
-                        const groupedSubs = {};
-                        substitutions.forEach(sub => {
-                            if (!groupedSubs[sub.ingredient_id]) {
-                                groupedSubs[sub.ingredient_id] = [];
-                            }
-                            groupedSubs[sub.ingredient_id].push(sub);
-                        });
-                        
-                        // Create radio button groups for each original ingredient
-                        Object.keys(groupedSubs).forEach(ingredientId => {
-                            const subs = groupedSubs[ingredientId];
-                            const originalIngredient = baseIngredients.find(ing => ing.id == ingredientId);
-                            
-                            if (originalIngredient) {
-                                const fieldset = document.createElement('fieldset');
-                                fieldset.className = 'border border-gray-200 rounded-lg p-3';
-                                
-                                const legend = document.createElement('legend');
-                                legend.className = 'text-sm font-medium px-2';
-                                legend.textContent = `Replace ${originalIngredient.name} with:`;
-                                fieldset.appendChild(legend);
-                                
-                                // Add "No substitution" option
-                                const defaultDiv = document.createElement('div');
-                                defaultDiv.className = 'flex items-center space-x-2 mb-2';
-                                defaultDiv.innerHTML = `
-                                    <input type="radio" name="sub-${ingredientId}" id="sub-${ingredientId}-default" 
-                                           class="substitution-radio rounded-full border-gray-300 text-pily-orange focus:ring-pily-orange"
-                                           checked data-id="${ingredientId}" data-action="none">
-                                    <label for="sub-${ingredientId}-default" class="text-sm">No substitution</label>
-                                `;
-                                fieldset.appendChild(defaultDiv);
-                                
-                                // Add each substitution option
-                                subs.forEach(sub => {
-                                    const div = document.createElement('div');
-                                    div.className = 'flex items-center space-x-2 mb-2';
-                                    div.innerHTML = `
-                                        <input type="radio" name="sub-${ingredientId}" id="sub-${ingredientId}-${sub.replacement_id}" 
-                                               class="substitution-radio rounded-full border-gray-300 text-pily-orange focus:ring-pily-orange"
-                                               data-id="${ingredientId}" data-replacement="${sub.replacement_id}" 
-                                               data-price="${sub.price}" data-name="${sub.name}">
-                                        <label for="sub-${ingredientId}-${sub.replacement_id}" class="text-sm">${sub.name} (+$${sub.price})</label>
-                                    `;
-                                    fieldset.appendChild(div);
-                                });
-                                
-                                substitutionContainer.appendChild(fieldset);
-                            }
-                        });
-                        document.getElementById('substitutions-section').classList.remove('hidden');
-                    } else {
-                        document.getElementById('substitutions-section').classList.add('hidden');
-                    }
-                    
-                    // Update total price
-                    updateTotalPrice();
-                    
-                    // Show the modal
-                    document.getElementById('item-modification-modal').classList.remove('hidden');
-                })
-                .catch(error => {
-                    console.error('Error fetching menu item:', error);
-                    alert('Error fetching menu item details. Please try again.');
-                });
-        }
-        
-        // Function to close the modal
-        function closeItemModal() {
-            document.getElementById('item-modification-modal').classList.add('hidden');
-            // Reset form elements
-            document.getElementById('special-instructions').value = '';
-            document.getElementById('item-quantity').value = '1';
-        }
-        
-        // Function to update the total price based on modifications and quantity
-        function updateTotalPrice() {
-            const quantity = parseInt(document.getElementById('item-quantity').value) || 1;
-            let itemPrice = basePrice;
-            
-            // Add prices from checked additions
-            document.querySelectorAll('.addition-checkbox:checked').forEach(checkbox => {
-                const price = parseFloat(checkbox.dataset.price) || 0;
-                const quantitySelect = document.querySelector(`.quantity-select[data-id="${checkbox.dataset.id}"]`);
-                const multiplier = quantitySelect ? parseInt(quantitySelect.value) || 1 : 1;
-                itemPrice += price * multiplier;
-            });
-            
-            // Add prices from selected substitutions
-            document.querySelectorAll('.substitution-radio:checked').forEach(radio => {
-                if (radio.dataset.replacement) {
-                    const price = parseFloat(radio.dataset.price) || 0;
-                    itemPrice += price;
-                }
-            });
-            
-            // Update the displayed price
-            const totalPrice = (itemPrice * quantity).toFixed(2);
-            document.getElementById('total-price').textContent = totalPrice;
-        }
-        
-// Function to collect all modifications for the order
-function collectModifications() {
-    const modifications = [];
-    
-    // Process removals
-    document.querySelectorAll('.removal-checkbox:checked').forEach(checkbox => {
-        modifications.push({
-            type: "remove",
-            ingredient_id: parseInt(checkbox.dataset.id),
-            name: checkbox.dataset.name,
-            price_adjustment: parseFloat(checkbox.dataset.price) || 0
-        });
-    });
-    
-    // Process additions
-    document.querySelectorAll('.addition-checkbox:checked').forEach(checkbox => {
-        const quantitySelect = document.querySelector(`.quantity-select[data-id="${checkbox.dataset.id}"]`);
-        const quantity = quantitySelect ? parseInt(quantitySelect.value) || 1 : 1;
-        
-        modifications.push({
-            type: "add",
-            ingredient_id: parseInt(checkbox.dataset.id),
-            name: checkbox.dataset.name,
-            quantity: quantity,
-            price_adjustment: (parseFloat(checkbox.dataset.price) || 0) * quantity
-        });
-    });
-    
-    // Process substitutions
-    document.querySelectorAll('.substitution-radio:checked').forEach(radio => {
-        if (radio.dataset.replacement) {
-            modifications.push({
-                type: "substitute",
-                ingredient_id: parseInt(radio.dataset.id),
-                replacement_id: parseInt(radio.dataset.replacement),
-                name: radio.dataset.name,
-                price_adjustment: parseFloat(radio.dataset.price) || 0
-            });
-        }
-    });
-    
-    return modifications;
-}
-
-
-
-
-        // Function to collect all modifications for the order
-        function collectModificationsWithMeats() {
-    // Get basic modifications
-    const modifications = collectModifications();
-    
-               // Check if this is a mixed dish - use string comparison ("8" == 8 is true, but "8" === 8 is false)
-    const itemId = document.getElementById('modal-item-id').value;
-    if (parseInt(itemId) !== MIXED_DISH_ID) return modifications;
-
-    
-            // Process removals
-            document.querySelectorAll('.removal-checkbox:checked').forEach(checkbox => {
-                modifications.push({
-                    type: "remove",
-                    ingredient_id: parseInt(checkbox.dataset.id),
-                    name: checkbox.dataset.name,
-                    price_adjustment: parseFloat(checkbox.dataset.price) || 0
-                });
-            });
-            
-            // Process additions
-            document.querySelectorAll('.addition-checkbox:checked').forEach(checkbox => {
-                const quantitySelect = document.querySelector(`.quantity-select[data-id="${checkbox.dataset.id}"]`);
-                const quantity = quantitySelect ? parseInt(quantitySelect.value) || 1 : 1;
-                
-                modifications.push({
-                    type: "add",
-                    ingredient_id: parseInt(checkbox.dataset.id),
-                    name: checkbox.dataset.name,
-                    quantity: quantity,
-                    price_adjustment: (parseFloat(checkbox.dataset.price) || 0) * quantity
-                });
-            });
-            
-            // Process substitutions
-            document.querySelectorAll('.substitution-radio:checked').forEach(radio => {
-                if (radio.dataset.replacement) {
-                    modifications.push({
-                        type: "substitute",
-                        ingredient_id: parseInt(radio.dataset.id),
-                        replacement_id: parseInt(radio.dataset.replacement),
-                        name: radio.dataset.name,
-                        price_adjustment: parseFloat(radio.dataset.price) || 0
-                    });
-                }
-            });
-            
-            return modifications;
-        }
-        
-        // Add event listeners for modal functions
-        document.addEventListener('DOMContentLoaded', function() {
-            // Close modal event
-            document.getElementById('close-modal').addEventListener('click', closeItemModal);
-            
-            // Quantity buttons
-            document.getElementById('decrease-quantity').addEventListener('click', function() {
-                const quantityInput = document.getElementById('item-quantity');
-                const currentVal = parseInt(quantityInput.value) || 1;
-                if (currentVal > 1) {
-                    quantityInput.value = currentVal - 1;
-                    updateTotalPrice();
-                }
-            });
-            
-            document.getElementById('increase-quantity').addEventListener('click', function() {
-                const quantityInput = document.getElementById('item-quantity');
-                const currentVal = parseInt(quantityInput.value) || 1;
-                if (currentVal < 99) {
-                    quantityInput.value = currentVal + 1;
-                    updateTotalPrice();
-                }
-            });
-            
-            // Update price when quantity changes
-            document.getElementById('item-quantity').addEventListener('change', updateTotalPrice);
-            
-            // Event delegation for modification checkboxes
-            document.addEventListener('change', function(e) {
-                // Handle addition checkboxes
-                if (e.target.classList.contains('addition-checkbox')) {
-                    const quantitySelect = document.querySelector(`.quantity-select[data-id="${e.target.dataset.id}"]`);
-                    if (quantitySelect) {
-                        quantitySelect.classList.toggle('hidden', !e.target.checked);
-                    }
-                    updateTotalPrice();
-                }
-                
-                // Handle other modification changes
-                if (e.target.classList.contains('removal-checkbox') || 
-                    e.target.classList.contains('substitution-radio') ||
-                    e.target.classList.contains('quantity-select')) {
-                    updateTotalPrice();
-                }
-            });
-            
-            // Add to order button
-            document.getElementById('add-to-order').addEventListener('click', function() {
-                const itemId = document.getElementById('modal-item-id').value;
-                const quantity = parseInt(document.getElementById('item-quantity').value) || 1;
-                const specialInstructions = document.getElementById('special-instructions').value.trim();
-                const modifications = collectModifications();
-                
-                // Get the menu item details
-                const itemName = document.getElementById('modal-item-name').textContent;
-                const itemPrice = parseFloat(document.getElementById('modal-item-price').value);
-                
-                // Calculate the modified price
-                let modifiedPrice = itemPrice;
-                modifications.forEach(mod => {
-                    modifiedPrice += mod.price_adjustment || 0;
-                });
-                
-                // Add to cart
-                if (!cart[itemId]) {
-                    cart[itemId] = { 
-                        name: itemName, 
-                        price: modifiedPrice,
-                        quantity: 0,
-                        modifications: [],
-                        special_instructions: ''
-                    };
-                }
-                
-                // Update the item
-                cart[itemId].quantity += quantity;
-                cart[itemId].modifications = modifications;
-                cart[itemId].special_instructions = specialInstructions;
-                
-                // Update the UI
-                const quantityElement = document.getElementById(`qty-${itemId}`);
-                if (quantityElement) {
-                    quantityElement.textContent = cart[itemId].quantity;
-                }
-                
-                // Update the cart display
-                updateCart();
-                
-                // Close the modal
-                closeItemModal();
-                
-                // Optional: Show a confirmation message
-                const toast = document.createElement('div');
-                toast.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-                toast.textContent = `${quantity}× ${itemName} added to cart`;
-                document.body.appendChild(toast);
-                
-                // Remove the toast after 3 seconds
-                setTimeout(() => {
-                    toast.remove();
-                }, 3000);
-            });
-        });
-        // Configuration for mixed dishes
-const MIXED_DISH_ID = 8 ; // This will be the ID of your Mixed Gordita menu item
-
-// Function to enhance the item modal for mixed dishes
-function setupMixedDishModal(itemId) {
-    // Check if this is our mixed dish
-    if (itemId !== MIXED_DISH_ID) return false;
-    
-    // Create the meat selection section if it doesn't exist
-    let meatSection = document.getElementById('meat-selection-section');
-    if (!meatSection) {
-        const modalBody = document.querySelector('#item-modification-modal .p-6');
-        
-        // Create new section for meat selection
-        meatSection = document.createElement('div');
-        meatSection.id = 'meat-selection-section';
-        meatSection.className = 'mb-6';
-        meatSection.innerHTML = `
-            <h4 class="text-lg font-bold text-pily-orange mb-2">Selecciona tus carnes (elige exactamente 2)</h4>
-            <div id="meat-options" class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <!-- Meat options will be inserted here -->
-            </div>
-            <p id="meat-selection-error" class="text-red-500 text-sm mt-2 hidden">Por favor selecciona exactamente 2 tipos de carne.</p>
-        `;
-        
-        // Insert the meat section after the base ingredients section
-        const ingredientsSection = document.getElementById('modal-ingredients').parentNode;
-        ingredientsSection.parentNode.insertBefore(meatSection, ingredientsSection.nextSibling);
-    }
-    
-    // Populate meat options
-    const meatOptions = document.getElementById('meat-options');
-    meatOptions.innerHTML = '';
-    
-    // Get meat options from your API or use hardcoded options for now
-    const meatTypes = [
-        { id: 1, name: "PapasConChorizo", price: 20 },
-        { id: 2, name: "MasaGordita", price: 20 },
-        { id: 3, name: "ChicharronSalsaVerde", price: 20 },
-        { id: 4, name: "Picadillo", price: 20 },
-        { id: 5, name: "Nopales", price: 20 }, // Premium meat with extra cost
-        { id: 6, name: "Carne de pata", price: 20 } // Premium meat with extra cost
-    ];
-    
-    // Add each meat option as a checkbox
-    meatTypes.forEach(meat => {
-        const div = document.createElement('div');
-        div.className = 'flex items-center space-x-2';
-        div.innerHTML = `
-            <input type="checkbox" id="meat-${meat.id}" 
-                   class="meat-checkbox rounded border-gray-300 text-pily-orange focus:ring-pily-orange"
-                   data-id="${meat.id}" data-price="${meat.price || 0}" data-name="${meat.name}">
-            <label for="meat-${meat.id}" class="text-sm">
-                ${meat.name} ${meat.price > 0 ? `(+$${meat.price})` : ''}
-            </label>
-        `;
-        meatOptions.appendChild(div);
-    });
-    
-    return true;
-}
-
-// Enhance the existing updateTotalPrice function to account for meat selections
-function updateTotalPriceWithMeats() {
-    // Call the original updateTotalPrice function first
-    updateTotalPrice();
-    
-    // Check if this is a mixed dish
-    const itemId = document.getElementById('modal-item-id').value;
-    if (itemId !== MIXED_DISH_ID) return;
-    
-    // Add prices from selected meats
-    let totalEl = document.getElementById('total-price');
-    let currentTotal = parseFloat(totalEl.textContent);
-    const quantity = parseInt(document.getElementById('item-quantity').value) || 1;
-    
-    document.querySelectorAll('.meat-checkbox:checked').forEach(checkbox => {
-        const price = parseFloat(checkbox.dataset.price) || 0;
-        currentTotal += price;
-    });
-    
-    totalEl.textContent = (currentTotal * quantity).toFixed(2);
-}
-
-// Modify the collectModifications function to include meat selections
-function collectModificationsWithMeats() {
-    // Get basic modifications
-    const modifications = collectModifications();
-    
-    // Check if this is a mixed dish
-    const itemId = document.getElementById('modal-item-id').value;
-    if (itemId !== 8) return modifications;
-    
-    // Add meat selections as additions
-    document.querySelectorAll('.meat-checkbox:checked').forEach(checkbox => {
-        modifications.push({
-            type: "meat_selection", // Custom type for meats
-            ingredient_id: parseInt(checkbox.dataset.id),
-            name: checkbox.dataset.name,
-            quantity: 1,
-            price_adjustment: parseFloat(checkbox.dataset.price) || 0
-        });
-    });
-    
-    return modifications;
-}
-
-// In your JavaScript, modify the validateMixedDishSelection function:
-function validateMixedDishSelection() {
-    const itemId = document.getElementById('modal-item-id').value;
-    // Use strict equality with string conversion to ensure proper comparison
-    if (String(itemId) !== String(MIXED_DISH_ID)) return true;
-    
-    const selectedMeats = document.querySelectorAll('.meat-checkbox:checked');
-    const isValid = selectedMeats.length === 2;
-    
-    const errorMsg = document.getElementById('meat-selection-error');
-    errorMsg.classList.toggle('hidden', isValid);
-    
-    return isValid;
-}
-
-// Same for other functions that check MIXED_DISH_ID
-
-// Modify the original openItemModal function
-const originalOpenItemModal = openItemModal;
-openItemModal = function(itemId) {
-    // Call the original function
-    originalOpenItemModal(itemId);
-    
-    // Add our custom setup for mixed dishes
-    setupMixedDishModal(itemId);
-    
-    // Add meat selection change handlers
-    document.querySelectorAll('.meat-checkbox').forEach(checkbox => {
-        checkbox.addEventListener('change', () => {
-            updateTotalPriceWithMeats();
-            validateMixedDishSelection();
-            
-            // Limit to exactly 2 selections
-            const checkboxes = document.querySelectorAll('.meat-checkbox:checked');
-            if (checkboxes.length > 2) {
-                // Uncheck the oldest selection if more than 2 are selected
-                checkboxes[0].checked = false;
-                updateTotalPriceWithMeats();
-            }
-        });
-    });
-};
-
-// Update the add-to-order button click handler
-document.addEventListener('DOMContentLoaded', function() {
-    const originalAddToOrderBtn = document.getElementById('add-to-order');
-    
-    originalAddToOrderBtn.onclick = function(event) {
-        // For mixed dishes, validate meat selection
-        const itemId = document.getElementById('modal-item-id').value;
-        
-        if (String(itemId) === String(MIXED_DISH_ID)) {
-            if (!validateMixedDishSelection()) {
-                // Prevent order if validation fails
-                return false;
-            }
-            
-            // Use our enhanced modifications collector
-            const modifications = collectModificationsWithMeats();
-            
-            // Update the item name to show it's a mixed dish
-            const selectedMeats = Array.from(document.querySelectorAll('.meat-checkbox:checked'))
-                .map(checkbox => checkbox.dataset.name);
-            
-            const itemName = document.getElementById('modal-item-name').textContent;
-            document.getElementById('modal-item-name').textContent = 
-                `${itemName} (${selectedMeats.join(' y ')})`;
-                
-            // Get the menu item details
-            const itemPrice = parseFloat(document.getElementById('modal-item-price').value);
-            
-            // Calculate the modified price with meat selections
-            let modifiedPrice = itemPrice;
-            modifications.forEach(mod => {
-                modifiedPrice += mod.price_adjustment || 0;
-            });
-            
-            // Add to cart
-            if (!cart[itemId]) {
-                cart[itemId] = { 
-                    name: document.getElementById('modal-item-name').textContent, 
-                    price: modifiedPrice,
-                    quantity: 0,
-                    modifications: modifications,
-                    special_instructions: document.getElementById('special-instructions').value.trim()
-                };
-            }
-            
-            // Update the item
-            cart[itemId].quantity += parseInt(document.getElementById('item-quantity').value) || 1;
-            
-            // Update the cart display
-            updateCart();
-            
-            // Close the modal
-            closeItemModal();
-            
-            // Show confirmation message
-            const toast = document.createElement('div');
-            toast.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-            toast.textContent = `${cart[itemId].quantity}× ${cart[itemId].name} added to cart`;
-            document.body.appendChild(toast);
-            
-            // Remove toast after 3 seconds
-            setTimeout(() => {
-                toast.remove();
-            }, 3000);
-            
-            return false; // Prevent default behavior
-        }
-        
-        // For non-mixed dishes, use the existing code
-        const itemId2 = document.getElementById('modal-item-id').value;
-        const quantity = parseInt(document.getElementById('item-quantity').value) || 1;
-        const specialInstructions = document.getElementById('special-instructions').value.trim();
-        const modifications = collectModifications();
-        
-        // Get the menu item details
-        const itemName = document.getElementById('modal-item-name').textContent;
-        const itemPrice = parseFloat(document.getElementById('modal-item-price').value);
-        
-        // Calculate the modified price
-        let modifiedPrice = itemPrice;
-        modifications.forEach(mod => {
-            modifiedPrice += mod.price_adjustment || 0;
-        });
-        
-        // Add to cart
-        if (!cart[itemId2]) {
-            cart[itemId2] = { 
-                name: itemName, 
-                price: modifiedPrice,
-                quantity: 0,
-                modifications: [],
-                special_instructions: ''
-            };
-        }
-        
-        // Update the item
-        cart[itemId2].quantity += quantity;
-        cart[itemId2].modifications = modifications;
-        cart[itemId2].special_instructions = specialInstructions;
-        
-        // Update the UI
-        const quantityElement = document.getElementById(`qty-${itemId2}`);
-        if (quantityElement) {
-            quantityElement.textContent = cart[itemId2].quantity;
-        }
-        
-        // Update the cart display
-        updateCart();
-        
-        // Close the modal
-        closeItemModal();
-        
-        // Optional: Show a confirmation message
-        const toast = document.createElement('div');
-        toast.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-        toast.textContent = `${quantity}× ${itemName} added to cart`;
-        document.body.appendChild(toast);
-        
-        // Remove the toast after 3 seconds
-        setTimeout(() => {
-            toast.remove();
-        }, 3000);
-    };
-});
     </script>
+    <!-- #endregion SCRIPT SECTION -->
+</body>
+</html>
