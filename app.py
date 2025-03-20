@@ -30,7 +30,7 @@ def create_app():
     migrate.init_app(app, db)
     cors.init_app(app, resources={r"/*": {"origins": "*"}})
 
-    # ✅ Move model imports inside app context
+    # model imports inside app context
     with app.app_context():
         import routes
         from models.menu import MenuItem, Recipe
@@ -38,14 +38,17 @@ def create_app():
         from models.stock import Ingredient
         from models.branch import Branch
         from models.associations import menu_item_branches
+        from models.stock_sale import StockSale  
 
     # Register blueprints
     from blueprints.admin import admin_bp
     from blueprints.api import api_bp
     from blueprints.pos import pos_bp
+    from blueprints.pos import stock_bp
     app.register_blueprint(admin_bp, url_prefix='/admin')
     app.register_blueprint(api_bp, url_prefix='/api')
     app.register_blueprint(pos_bp, url_prefix='/pos')
+    app.register_blueprint(stock_bp, url_prefix='/stock')  
 
     return app
 
@@ -65,5 +68,4 @@ def handle_order_update(data):
 
 #region --- Run the app ---
 if __name__ == "__main__":
-    socketio.run(app, debug=True, allow_unsafe_werkzeug=True)  # ✅ Removed db.create_all()
-#endregion
+    socketio.run(app, debug=True, allow_unsafe_werkzeug=True)  
