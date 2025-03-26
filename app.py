@@ -44,7 +44,7 @@ def create_app():
     from blueprints.admin import admin_bp
     from blueprints.api import api_bp
     from blueprints.pos import pos_bp
-    from blueprints.pos import stock_bp
+    from blueprints.stock import stock_bp
     app.register_blueprint(admin_bp, url_prefix='/admin')
     app.register_blueprint(api_bp, url_prefix='/api')
     app.register_blueprint(pos_bp, url_prefix='/pos')
